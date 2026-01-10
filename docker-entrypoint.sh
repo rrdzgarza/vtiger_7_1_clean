@@ -73,7 +73,16 @@ if [ -f /var/www/html/config.inc.php ]; then
     fi
     
     # Ensure correct permissions
-    chown www-data:www-data /var/www/html/config.inc.php
+    chown -R www-data:www-data /var/www/html
+    
+    # Force permissions for critical writable folders
+    chmod -R 775 /var/www/html/cache
+    chmod -R 775 /var/www/html/logs
+    chmod -R 775 /var/www/html/test
+    chmod -R 775 /var/www/html/storage
+    chmod -R 775 /var/www/html/user_privileges
+    chmod -R 775 /var/www/html/modules
+    chmod -R 775 /var/www/html/test/templates_c
     
     # DEBUG: Print config to logs to verify generation (hide sensitive pass first?)
     # Ideally checking syntax
