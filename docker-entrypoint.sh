@@ -131,11 +131,14 @@ if [ -f /var/www/html/config.inc.php ]; then
 
 
     # Remove specific check logic in WebUI.php that causes redirect loops behind proxies
-    # We use sed to comment out the block lines 107-113 approx
+    # We use aggressive sed to comment out the block lines 107-113 approx
     # Target: if ($site_URL && stripos($request_URL, $site_URL) !== 0){
-    sed -i 's|if ($site_URL && stripos($request_URL, $site_URL) !== 0){|// if ($site_URL \&\& stripos($request_URL, $site_URL) !== 0){|g' /var/www/html/includes/main/WebUI.php
-    sed -i 's|header("Location: $site_URL",TRUE,301);|// header("Location: $site_URL",TRUE,301);|g' /var/www/html/includes/main/WebUI.php
-    sed -i 's|exit;|// exit;|g' /var/www/html/includes/main/WebUI.php
+    # We use a loose match to ensure it works even if whitespace differs
+    sed -i 's/if.*$site_URL.*&&.*stripos.*$request_URL.*$site_URL.*/\/\/ &/' /var/www/html/includes/main/WebUI.php
+    sed -i 's/header("Location: $site_URL",TRUE,301);/\/\/ &/' /var/www/html/includes/main/WebUI.php
+    # We comment out the exit that follows the header
+    # Context match: Find header line, then next line is exit.
+    sed -i '/header("Location: \$site_URL",TRUE,301);/{n;s/exit;/\/\/ exit;/}' /var/www/html/includes/main/WebUI.php
 
     # Create temporary regeneration script
     # (Restored header)
@@ -448,6 +451,13 @@ if (file_exists('logs/vtigercrm.log')) {
 
 echo "<h2>Index Include Test</h2>";
 echo "Buffered Output from include check: <pre>" . htmlspecialchars(substr(\$output, 0, 500)) . "</pre>";
+
+echo "<h2>Config Integrity Check</h2>";
+// Dump config.inc.php but mask password
+\$config_content = file_get_contents('config.inc.php');
+\$config_content = preg_replace("/'db_password'\s*=>\s*'.*'/", "'db_password' => '***REDACTED***'", \$config_content);
+\$config_content = preg_replace("/\\\$db_password\s*=\s*'[^']*'/", "\$db_password = '***REDACTED***'", \$config_content);
+echo "<textarea rows='20' cols='100'>" . htmlspecialchars(\$config_content) . "</textarea>";
 
 ?>
 EOF
