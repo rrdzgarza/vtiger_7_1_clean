@@ -105,7 +105,7 @@ if [ -f /var/www/html/config.inc.php ]; then
         
         # Remove zombie file if exists (to start clean)
         rm -f /var/www/html/user_privileges/user_privileges_1.php
-EOF
+
 
 
 
@@ -116,7 +116,7 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 define('vtiger_exit', true);
 
-EOF
+
 
     # Create temporary regeneration script
     cat <<EOF > /var/www/html/recalculate.php
