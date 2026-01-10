@@ -99,8 +99,12 @@ if [ -f /var/www/html/config.inc.php ]; then
     chmod -R 775 /var/www/html/test/templates_c
     
     # REGENERATE PRIVILEGES IF MISSING (For existing DBs)
-    if [ ! -f /var/www/html/user_privileges/user_privileges_1.php ]; then
-        echo "Detected missing user_privileges for existing install. Regenerating..."
+    # Check for user_privileges_1.php OR missing tabdata.php (which implies incomplete setup)
+    if [ ! -f /var/www/html/user_privileges/user_privileges_1.php ] || [ ! -f /var/www/html/user_privileges/tabdata.php ]; then
+        echo "Detected missing user_privileges or tabdata for existing install. Regenerating..."
+        
+        # Remove zombie file if exists (to start clean)
+        rm -f /var/www/html/user_privileges/user_privileges_1.php
 EOF
 
 
