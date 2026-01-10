@@ -14,7 +14,9 @@ if [ ! -s /var/www/html/config.inc.php ]; then
     fi
 fi
 
+   
 
+   
 # Replace Template Placeholders if they exist (handling config from template)
 if [ -f /var/www/html/config.inc.php ]; then
     # Replace Database Placeholders
@@ -27,14 +29,19 @@ if [ -f /var/www/html/config.inc.php ]; then
     # Set DB Type to mysqli
     sed -i "s|_DBC_TYPE_|mysqli|g" /var/www/html/config.inc.php
     # Set Port (remove colon if present in template)
-    # Set Port 
+    # Set Port (PREPEND COLON as requested by user)
+    # If DB_PORT is set, use it, otherwise 3306.
+    # We force the format ':3306' 
+    TARGET_PORT="3306"
     if [ ! -z "$DB_PORT" ]; then
-        sed -i "s|:_DBC_PORT_|${DB_PORT}|g" /var/www/html/config.inc.php
-        sed -i "s|_DBC_PORT_|${DB_PORT}|g" /var/www/html/config.inc.php
-    else
-        sed -i "s|:_DBC_PORT_|3306|g" /var/www/html/config.inc.php
-        sed -i "s|_DBC_PORT_|3306|g" /var/www/html/config.inc.php
+        TARGET_PORT="${DB_PORT}"
     fi
+
+    # Replace both patterns to ensure we get ':PORT' in the end
+    # Logic: If template had ':_DBC_PORT_', we replace it with ':TARGET_PORT'
+    # If template had '_DBC_PORT_', we replace it with ':TARGET_PORT'
+    sed -i "s|:_DBC_PORT_|:${TARGET_PORT}|g" /var/www/html/config.inc.php
+    sed -i "s|_DBC_PORT_|:${TARGET_PORT}|g" /var/www/html/config.inc.php
 
     
     # Fix root_directory to satisfy Vtiger security check
