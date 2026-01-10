@@ -109,13 +109,6 @@ if [ -f /var/www/html/config.inc.php ]; then
 
 
 
-    # Create temporary regeneration script
-    cat <<EOF > /var/www/html/recalculate.php
-<?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-define('vtiger_exit', true);
-
 
 
     # Create temporary regeneration script
