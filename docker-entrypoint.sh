@@ -115,30 +115,33 @@ echo "Creator loaded.\n";
 global \$adb;
 echo "Starting Privilege Regeneration...\n";
 
-// Debug connection
-if (!\$adb) { die("Fatal: \$adb object is null.\n"); }
-// echo "DB Status: " . print_r(\$adb, true); 
+// Use RAW connection because \$adb seems broken in this context
+include 'config.inc.php';
+\$raw_conn = new mysqli(\$dbconfig['db_server'], \$dbconfig['db_username'], \$dbconfig['db_password'], \$dbconfig['db_name'], \$dbconfig['db_port']);
 
-\$query = "SELECT id, user_name FROM vtiger_users";
-echo "Executing query: \$query\n";
-\$result = \$adb->pquery(\$query, array());
+if (\$raw_conn->connect_error) {
+    die("Raw Connection failed: " . \$raw_conn->connect_error);
+}
+
+\$query = "SELECT id, user_name FROM vtiger_users WHERE deleted=0";
+echo "Executing raw query: \$query\n";
+\$result = \$raw_conn->query(\$query);
 
 if(\$result) {
-    \$count = \$adb->num_rows(\$result);
-    echo "Query successful. Rows found: \$count\n";
-    if (\$count == 0) {
-        echo "WARNING: No users found in vtiger_users table!\n";
-    }
-    while(\$row = \$adb->fetch_array(\$result)) {
+    \$count = \$result->num_rows;
+    echo "Query successful. Users found: \$count\n";
+    while(\$row = \$result->fetch_assoc()) {
         \$userId = \$row['id'];
         \$userName = \$row['user_name'];
         echo "Generating privileges for User ID: \$userId (\$userName) ... ";
+        // We use the Vtiger function for generation, ensuring \$adb is somewhat available if needed by the function
+        // Re-ensure adb is global
+        global \$adb;
         createUserPrivilegesfile(\$userId);
         echo "Done.\n";
     }
 } else {
-    echo "Query FAILED.\n";
-    // echo "Error: " . \$adb->database->ErrorMsg(); // Might vary by ADODB version
+    echo "Query FAILED: " . \$raw_conn->error . "\n";
 }
 echo "Privilege regeneration complete.\n";
 ?>
