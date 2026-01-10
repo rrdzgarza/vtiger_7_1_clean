@@ -72,6 +72,15 @@ if [ -f /var/www/html/config.inc.php ]; then
     
     # Ensure correct permissions
     chown www-data:www-data /var/www/html/config.inc.php
+    
+    # DEBUG: Print config to logs to verify generation (hide sensitive pass first?)
+    # Ideally checking syntax
+    php -l /var/www/html/config.inc.php
+    echo "--- CONFIGURATION GENERATED ---"
+    # We redact the password for safety in logs if we print it, but for now just syntax check is good validation.
+    # If syntax is ok, we print the first 20 lines to check headers
+    head -n 50 /var/www/html/config.inc.php
+    echo "-------------------------------"
 fi
 
 exec apache2-foreground

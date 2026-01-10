@@ -31,7 +31,7 @@ RUN a2enmod rewrite
 # Crucially, we auto_prepend the SSL fix so Vtiger thinks it's strictly on HTTPS if Traefik says so.
 COPY vtiger-ssl-fix.php /usr/local/etc/php/vtiger-ssl-fix.php
 RUN echo "auto_prepend_file = /usr/local/etc/php/vtiger-ssl-fix.php" > /usr/local/etc/php/conf.d/vtiger-ssl-fix.ini \
-  && echo "display_errors = Off" >> /usr/local/etc/php/conf.d/vtiger-recommended.ini \
+  && echo "display_errors = On" >> /usr/local/etc/php/conf.d/vtiger-recommended.ini \
   && echo "max_execution_time = 600" >> /usr/local/etc/php/conf.d/vtiger-recommended.ini \
   && echo "memory_limit = 512M" >> /usr/local/etc/php/conf.d/vtiger-recommended.ini \
   && echo "post_max_size = 64M" >> /usr/local/etc/php/conf.d/vtiger-recommended.ini \
