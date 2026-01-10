@@ -88,6 +88,38 @@ if [ -f /var/www/html/config.inc.php ]; then
     chmod -R 775 /var/www/html/modules
     chmod -R 775 /var/www/html/test/templates_c
     
+    # REGENERATE PRIVILEGES IF MISSING (For existing DBs)
+    if [ ! -f /var/www/html/user_privileges/user_privileges_1.php ]; then
+        echo "Detected missing user_privileges for existing install. Regenerating..."
+        cat <<EOF > /var/www/html/recalculate.php
+<?php
+// Minimal bootstrap
+chdir('/var/www/html');
+require_once 'config.inc.php';
+require_once 'include/utils/utils.php';
+require_once 'modules/Users/Users.php';
+require_once 'modules/Users/CreateUserPrivilegesFile.php';
+
+global \$adb;
+echo "Starting Privilege Regeneration...\n";
+\$query = "SELECT id FROM vtiger_users WHERE deleted=0";
+\$result = \$adb->pquery(\$query, array());
+if(\$result) {
+    while(\$row = \$adb->fetch_array(\$result)) {
+        \$userId = \$row['id'];
+        echo "Generating privileges for User ID: \$userId ... ";
+        createUserPrivilegesfile(\$userId);
+        echo "Done.\n";
+    }
+}
+echo "Privilege regeneration complete.\n";
+?>
+EOF
+        # Run it
+        php /var/www/html/recalculate.php
+        rm /var/www/html/recalculate.php
+    fi
+    
     # DEBUG: Print config to logs to verify generation (hide sensitive pass first?)
     # Ideally checking syntax
     php -l /var/www/html/config.inc.php
