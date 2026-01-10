@@ -140,6 +140,14 @@ if(\$result) {
         createUserPrivilegesfile(\$userId);
         echo "Done.\n";
     }
+    
+    // Also generate Tab Data (Menu structure)
+    echo "Generating Tab Data (tabdata.php)... ";
+    require_once 'include/utils/UserInfoUtil.php';
+    create_tab_data_file();
+    create_parenttab_data_file();
+    echo "Done.\n";
+    
 } else {
     echo "Query FAILED: " . \$raw_conn->error . "\n";
 }
@@ -156,6 +164,10 @@ EOF
         
         # Don't remove it yet so we can debug if needed
         # rm /var/www/html/recalculate.php
+        
+        # FIX PERMISSIONS AGAIN (Because script ran as root)
+        echo "Fixing ownership of generated files..."
+        chown -R www-data:www-data /var/www/html/user_privileges
     fi
     
     # DEBUG: Print config to logs to verify generation (hide sensitive pass first?)
