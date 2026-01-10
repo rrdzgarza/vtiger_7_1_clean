@@ -2,10 +2,15 @@
 set -e
 
 # Copy config if it doesn't exist but sample does
-if [ ! -f /var/www/html/config.inc.php ]; then
-    if [ -f /var/www/html/config.sample.inc.php ]; then
-        echo "Initializing config.inc.php from config.sample.inc.php..."
-        cp /var/www/html/config.sample.inc.php /var/www/html/config.inc.php
+# Check if config is missing OR empty (0 bytes)
+if [ ! -s /var/www/html/config.inc.php ]; then
+    # We use config.template.php because config.sample.inc.php is missing in this version
+    if [ -f /var/www/html/config.template.php ]; then
+        echo "Initializing config.inc.php from config.template.php..."
+        cp /var/www/html/config.template.php /var/www/html/config.inc.php
+    elif [ -f /var/www/html/config.sample.inc.php ]; then
+         echo "Initializing config.inc.php from config.sample.inc.php..."
+         cp /var/www/html/config.sample.inc.php /var/www/html/config.inc.php
     fi
 fi
 

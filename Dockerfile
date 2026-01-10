@@ -42,6 +42,7 @@ WORKDIR /var/www/html
 RUN wget "https://sourceforge.net/projects/vtigercrm/files/vtiger%20CRM%207.1.0/Core%20Product/vtigercrm7.1.0.tar.gz/download" -O vtiger.tar.gz \
   && tar -xzf vtiger.tar.gz \
   && cp -r vtigercrm/* . \
+  && cp htaccess.txt .htaccess \
   && rm -rf vtigercrm vtiger.tar.gz
 
 # 4. Set Permissions
