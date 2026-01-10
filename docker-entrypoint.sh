@@ -376,6 +376,22 @@ try {
             echo "Vtiger_Viewer class FOUND.<br>";
             \$viewer = new Vtiger_Viewer();
             echo "Vtiger_Viewer instantiated.<br>";
+            
+            // Try to render a simple string or template if possible
+            echo "Attempting Basic Template Render... ";
+            try {
+                // Determine layout path
+                \$layout = 'v7'; 
+                echo "Layout: \$layout <br>";
+                // Check if layout folder exists
+                if (is_dir("layouts/\$layout")) {
+                   echo "layouts/\$layout exists.<br>";
+                } else {
+                   echo "layouts/\$layout MISSING.<br>";
+                }
+            } catch (Exception \$e) {
+                echo "Render Error: " . \$e->getMessage() . "<br>";
+            }
         } else {
             echo "Vtiger_Viewer class MISSING after import.<br>";
         }
@@ -388,27 +404,22 @@ try {
 \$v_out = ob_get_clean();
 echo \$v_out;
 
-echo "<h2>Index Include Test</h2>";
-echo "Attempting to include index.php (partial execution)...<br>";
-// We buffer output to catch immediate startup errors without rendering the whole page
-ob_start();
-try {
-    // Define a constant to prevent index.php from executing full dispatch if possible, 
-    // or just let it run a bit. 
-    // Vtiger doesn't have a 'don't execute' flag, so this might crash this script too if it dies.
-    // But helpful to see if it throws a catchable exception.
-    include_once 'config.inc.php';
-    // We don't include index.php because it usually has 'exit'.
-    // Instead we check for VtigerWebserviceObject which is common failure.
-    if (file_exists('include/Webservices/VtigerWebserviceObject.php')) {
-         echo "VtigerWebserviceObject.php found.<br>";
-    } else {
-         echo "VtigerWebserviceObject.php MISSING.<br>";
-    }
-} catch (Exception \$e) {
-    echo "Caught Exception: " . \$e->getMessage() . "<br>";
+echo "<h2>Logs Inspection</h2>";
+echo "<h3>Recalc Log (Last 50 lines)</h3>";
+if (file_exists('recalc_log.txt')) {
+    echo "<pre>" . htmlspecialchars(shell_exec('tail -n 50 recalc_log.txt')) . "</pre>";
+} else {
+    echo "recalc_log.txt missing.<br>";
 }
-\$output = ob_get_clean();
+
+echo "<h3>VtigerCRM Log (Last 50 lines)</h3>";
+if (file_exists('logs/vtigercrm.log')) {
+    echo "<pre>" . htmlspecialchars(shell_exec('tail -n 50 logs/vtigercrm.log')) . "</pre>";
+} else {
+    echo "logs/vtigercrm.log missing or not readable.<br>";
+}
+
+echo "<h2>Index Include Test</h2>";
 echo "Buffered Output from include check: <pre>" . htmlspecialchars(substr(\$output, 0, 500)) . "</pre>";
 
 ?>
