@@ -26,60 +26,37 @@ if [ -f /var/www/html/config.inc.php ]; then
     if [ ! -z "$DB_PASSWORD" ]; then sed -i "s|_DBC_PASS_|${DB_PASSWORD}|g" /var/www/html/config.inc.php; fi
     if [ ! -z "$DB_NAME" ]; then sed -i "s|_DBC_NAME_|${DB_NAME}|g" /var/www/html/config.inc.php; fi
     
-    # Set DB Type to mysqli
     sed -i "s|_DBC_TYPE_|mysqli|g" /var/www/html/config.inc.php
-    # Set Port (remove colon if present in template)
-    # Set Port (PREPEND COLON as requested by user)
-    # If DB_PORT is set, use it, otherwise 3306.
-    # We force the format ':3306' 
+    
+    # Set Port (Aggressive Replacement to fix previous bad states)
     TARGET_PORT="3306"
     if [ ! -z "$DB_PORT" ]; then
         TARGET_PORT="${DB_PORT}"
     fi
-
-    # Replace both patterns to ensure we get ':PORT' in the end
-    # Logic: If template had ':_DBC_PORT_', we replace it with ':TARGET_PORT'
-    # If template had '_DBC_PORT_', we replace it with ':TARGET_PORT'
+    # If the file already has '3306' or ':3306', we want to ensure it is ':3306' if that's what is needed for hostname concatenation.
+    # The config says: $dbconfig['db_hostname'] = $dbconfig['db_server'].$dbconfig['db_port'];
+    # So we MUST have a colon if db_server does not have it.
+    
+    # 1. Handle Template Placeholders
     sed -i "s|:_DBC_PORT_|:${TARGET_PORT}|g" /var/www/html/config.inc.php
     sed -i "s|_DBC_PORT_|:${TARGET_PORT}|g" /var/www/html/config.inc.php
+    
+    # 2. Fix existing wrong values (e.g. '3306' -> ':3306')
+    # If line matches $dbconfig['db_port'] = '3306'; change to ':3306'
+    sed -i "s|\$dbconfig\['db_port'\] = '${TARGET_PORT}';|\$dbconfig['db_port'] = ':${TARGET_PORT}';|g" /var/www/html/config.inc.php
+    
+    # Replace Missing Directories (CRITICAL FIX)
+    sed -i "s|_VT_CACHEDIR_|cache/|g" /var/www/html/config.inc.php
+    sed -i "s|_VT_TMPDIR_|cache/images/|g" /var/www/html/config.inc.php
+    sed -i "s|_VT_UPLOADDIR_|storage/|g" /var/www/html/config.inc.php
+    sed -i "s|_VT_APP_UNIQKEY_|$(date +%s)|g" /var/www/html/config.inc.php
+    sed -i "s|_USER_SUPPORT_EMAIL_|support@localhost|g" /var/www/html/config.inc.php
+    sed -i "s|_VT_CHARSET_|UTF-8|g" /var/www/html/config.inc.php
+    sed -i "s|_VT_DEFAULT_LANGUAGE_|en_us|g" /var/www/html/config.inc.php
+    sed -i "s|_MASTER_CURRENCY_|USD|g" /var/www/html/config.inc.php
 
-    
-    # Fix root_directory to satisfy Vtiger security check
-    sed -i "s|^\s*\$root_directory = .*|\$root_directory = '/var/www/html';|g" /var/www/html/config.inc.php
-
-    # Replace DB_STAT
-    sed -i "s|_DB_STAT_|true|g" /var/www/html/config.inc.php
-    
-    # Enable display_errors in config.inc.php for debugging the 500 error
-    # (Optional: remove this after debugging)
-    if grep -q "ini_set('display_errors'" /var/www/html/config.inc.php; then
-        sed -i "s|ini_set('display_errors',.*|ini_set('display_errors', 'On');|g" /var/www/html/config.inc.php
-    else
-        # Append it if not present
-        echo "ini_set('display_errors', 'On');" >> /var/www/html/config.inc.php
-        echo "version_compare(PHP_VERSION, '5.5.0') || error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);" >> /var/www/html/config.inc.php
-    fi
-fi
-
-# Apply Envs if config exists and vars are set (Legacy variable names)
-if [ -f /var/www/html/config.inc.php ]; then
-    echo "Checking for environment variables to configure Vtiger..."
-    
-    if [ ! -z "$DB_HOSTNAME" ]; then 
-        sed -i "s/\$db_hostname = .*/\$db_hostname = '${DB_HOSTNAME}';/" /var/www/html/config.inc.php
-    fi
-    
-    if [ ! -z "$DB_USERNAME" ]; then 
-        sed -i "s/\$db_username = .*/\$db_username = '${DB_USERNAME}';/" /var/www/html/config.inc.php
-    fi
-    
-    if [ ! -z "$DB_PASSWORD" ]; then 
-        sed -i "s/\$db_password = .*/\$db_password = '${DB_PASSWORD}';/" /var/www/html/config.inc.php
-    fi
-    
-    if [ ! -z "$DB_NAME" ]; then 
-        sed -i "s/\$db_name = .*/\$db_name = '${DB_NAME}';/" /var/www/html/config.inc.php
-    fi
+    # Fix root_directory (Idempotent: Replace existing instead of append)
+    sed -i "s|^\s*\$root_directory = .*|\$root_directory = '/var/www/html/';|g" /var/www/html/config.inc.php
     
     # Use | delimiter for URL to handle slashes
     if [ ! -z "$SITE_URL" ]; then 
@@ -92,13 +69,10 @@ if [ -f /var/www/html/config.inc.php ]; then
         sed -i "s|\$site_URL = .*|\$site_URL = 'https://vtiger-test1.caperti.com/';|" /var/www/html/config.inc.php
     fi
     
-    # Force $root_directory to have a trailing slash by appending to the end (Last One Wins)
-    # CRITICAL FIX: config.template.php often ends with '?>', so appending puts code OUTSIDE PHP tags.
-    # We must strip the closing tag first to ensure the appended code is executed and not printed.
-    sed -i 's/?>//g' /var/www/html/config.inc.php
-    
-    echo "Force updating root_directory..."
-    echo "\$root_directory = '/var/www/html/';" >> /var/www/html/config.inc.php
+    # Remove aggressive append of root_directory to prevent duplication
+    # We already handled it nicely in the section above via sed replacement.
+    # echo "Force updating root_directory..."
+    # echo "\$root_directory = '/var/www/html/';" >> /var/www/html/config.inc.php
     
     # Ensure correct permissions
     chown -R www-data:www-data /var/www/html
