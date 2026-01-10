@@ -71,8 +71,35 @@ if [ -f /var/www/html/config.inc.php ]; then
     
     # Remove aggressive append of root_directory to prevent duplication
     # We already handled it nicely in the section above via sed replacement.
-    # echo "Force updating root_directory..."
-    # echo "\$root_directory = '/var/www/html/';" >> /var/www/html/config.inc.php
+
+    # ---------------------------------------------------------------------------
+    # SUPPORT FOR RESTORED CONFIG FILES (From Backup)
+    # ---------------------------------------------------------------------------
+    # If the user copied a config.inc.php from another server, it has real values (not placeholders).
+    # We must overwrite them with the Container's Env Vars blindly.
+    
+    echo "Updating restored config.inc.php with container environment variables..."
+    
+    # Update Legacy Variables
+    if [ ! -z "$DB_HOSTNAME" ]; then sed -i "s/\$db_hostname = .*/\$db_hostname = '${DB_HOSTNAME}';/" /var/www/html/config.inc.php; fi
+    if [ ! -z "$DB_USERNAME" ]; then sed -i "s/\$db_username = .*/\$db_username = '${DB_USERNAME}';/" /var/www/html/config.inc.php; fi
+    if [ ! -z "$DB_PASSWORD" ]; then sed -i "s/\$db_password = .*/\$db_password = '${DB_PASSWORD}';/" /var/www/html/config.inc.php; fi
+    if [ ! -z "$DB_NAME" ]; then sed -i "s/\$db_name = .*/\$db_name = '${DB_NAME}';/" /var/www/html/config.inc.php; fi
+    
+    # Update V7 Array Variables ($dbconfig['key'])
+    # We use regex to match the assignment regardless of what value is inside quotes
+    if [ ! -z "$DB_HOSTNAME" ]; then 
+        sed -i "s|\$dbconfig\['db_server'\] = .*;|\$dbconfig['db_server'] = '${DB_HOSTNAME}';|g" /var/www/html/config.inc.php
+    fi
+    if [ ! -z "$DB_USERNAME" ]; then 
+        sed -i "s|\$dbconfig\['db_username'\] = .*;|\$dbconfig['db_username'] = '${DB_USERNAME}';|g" /var/www/html/config.inc.php
+    fi
+    if [ ! -z "$DB_PASSWORD" ]; then 
+        sed -i "s|\$dbconfig\['db_password'\] = .*;|\$dbconfig['db_password'] = '${DB_PASSWORD}';|g" /var/www/html/config.inc.php
+    fi
+    if [ ! -z "$DB_NAME" ]; then 
+        sed -i "s|\$dbconfig\['db_name'\] = .*;|\$dbconfig['db_name'] = '${DB_NAME}';|g" /var/www/html/config.inc.php
+    fi
     
     # Ensure correct permissions
     chown -R www-data:www-data /var/www/html
