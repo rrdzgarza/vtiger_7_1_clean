@@ -104,6 +104,7 @@ if [ -f /var/www/html/config.inc.php ]; then
 EOF
 
 
+
     # Create temporary regeneration script
     cat <<EOF > /var/www/html/recalculate.php
 <?php
