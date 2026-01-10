@@ -292,25 +292,48 @@ echo "<h2>Viewer/Smarty Test</h2>";
 ob_start();
 try {
     chdir('/var/www/html');
-    require_once 'includes/Loader.php';
-    vimport('includes.runtime.Viewer');
+    echo "Current Dir: " . getcwd() . "<br>";
     
-    if (class_exists('Vtiger_Viewer')) {
-        echo "Vtiger_Viewer class FOUND.<br>";
-        \$viewer = new Vtiger_Viewer();
-        echo "Vtiger_Viewer instantiated.<br>";
-        // Checking Smarty cache dir
-        echo "Smarty Compile Dir: test/templates_c <br>";
-        if (is_writable('test/templates_c')) {
-            echo "test/templates_c is WRITABLE.<br>";
-        } else {
-            echo "test/templates_c is NOT WRITABLE.<br>";
-        }
+    if (!file_exists('includes/Loader.php')) {
+        echo "CRITICAL: includes/Loader.php MISSING.<br>";
     } else {
-        echo "Vtiger_Viewer class MISSING.<br>";
+        require_once 'includes/Loader.php';
+        echo "Loader.php included.<br>";
+        
+        // Manual check for SmartyBC
+        \$smarty_file = 'libraries/Smarty/libs/SmartyBC.class.php';
+        echo "Checking \$smarty_file... ";
+        if (file_exists(\$smarty_file)) {
+            echo "FOUND. ";
+            if (is_readable(\$smarty_file)) {
+                echo "READABLE.<br>";
+            } else {
+                echo "NOT READABLE (Permissions?).<br>";
+            }
+        } else {
+            echo "MISSING!<br>";
+        }
+
+        // Test vimport resolution
+        echo "Testing vimport('~/libraries/Smarty/libs/SmartyBC.class.php')... ";
+        \$resolved = Vtiger_Loader::resolveNameToPath('~/libraries/Smarty/libs/SmartyBC.class.php');
+        echo "Resolved to: " . \$resolved . "<br>";
+        
+        echo "Attempting to import Viewer...<br>";
+        vimport('includes.runtime.Viewer');
+        
+        if (class_exists('Vtiger_Viewer')) {
+            echo "Vtiger_Viewer class FOUND.<br>";
+            \$viewer = new Vtiger_Viewer();
+            echo "Vtiger_Viewer instantiated.<br>";
+        } else {
+            echo "Vtiger_Viewer class MISSING after import.<br>";
+        }
     }
 } catch (Exception \$e) {
     echo "Viewer/Smarty Error: " . \$e->getMessage() . "<br>";
+} catch (Throwable \$t) { // PHP 7+
+    echo "Fatal Error: " . \$t->getMessage() . "<br>";
 }
 \$v_out = ob_get_clean();
 echo \$v_out;
