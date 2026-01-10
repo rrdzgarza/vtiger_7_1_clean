@@ -31,9 +31,10 @@ if [ -f /var/www/html/config.inc.php ]; then
     sed -i "s|_DBC_PORT_|3306|g" /var/www/html/config.inc.php
     
     # Fix root_directory to satisfy Vtiger security check
-    # We use more robust regex to handle potential indentation
-    # Removing trailing slash as it can cause issues with realpath() checks
     sed -i "s|^\s*\$root_directory = .*|\$root_directory = '/var/www/html';|g" /var/www/html/config.inc.php
+
+    # Replace DB_STAT
+    sed -i "s|_DB_STAT_|true|g" /var/www/html/config.inc.php
     
     # Enable display_errors in config.inc.php for debugging the 500 error
     # (Optional: remove this after debugging)
@@ -42,6 +43,7 @@ if [ -f /var/www/html/config.inc.php ]; then
     else
         # Append it if not present
         echo "ini_set('display_errors', 'On');" >> /var/www/html/config.inc.php
+        echo "version_compare(PHP_VERSION, '5.5.0') || error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);" >> /var/www/html/config.inc.php
     fi
 fi
 
