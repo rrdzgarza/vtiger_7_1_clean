@@ -27,8 +27,15 @@ if [ -f /var/www/html/config.inc.php ]; then
     # Set DB Type to mysqli
     sed -i "s|_DBC_TYPE_|mysqli|g" /var/www/html/config.inc.php
     # Set Port (remove colon if present in template)
-    sed -i "s|:_DBC_PORT_|3306|g" /var/www/html/config.inc.php
-    sed -i "s|_DBC_PORT_|3306|g" /var/www/html/config.inc.php
+    # Set Port 
+    if [ ! -z "$DB_PORT" ]; then
+        sed -i "s|:_DBC_PORT_|${DB_PORT}|g" /var/www/html/config.inc.php
+        sed -i "s|_DBC_PORT_|${DB_PORT}|g" /var/www/html/config.inc.php
+    else
+        sed -i "s|:_DBC_PORT_|3306|g" /var/www/html/config.inc.php
+        sed -i "s|_DBC_PORT_|3306|g" /var/www/html/config.inc.php
+    fi
+
     
     # Fix root_directory to satisfy Vtiger security check
     sed -i "s|^\s*\$root_directory = .*|\$root_directory = '/var/www/html';|g" /var/www/html/config.inc.php
@@ -96,7 +103,12 @@ if [ -f /var/www/html/config.inc.php ]; then
     chmod -R 775 /var/www/html/storage
     chmod -R 775 /var/www/html/user_privileges
     chmod -R 775 /var/www/html/modules
+    chmod -R 775 /var/www/html/modules
     chmod -R 775 /var/www/html/test/templates_c
+    
+    # Ensure log file exists and is writable
+    touch /var/www/html/logs/vtigercrm.log
+    chmod 777 /var/www/html/logs/vtigercrm.log
     
     # REGENERATE PRIVILEGES IF MISSING (For existing DBs)
     # Check for user_privileges_1.php OR missing tabdata.php (which implies incomplete setup)
