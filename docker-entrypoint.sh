@@ -105,47 +105,13 @@ if [ -f /var/www/html/config.inc.php ]; then
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
-
-// Limit memory ensuring it runs
-ini_set('memory_limit', '512M');
-
-echo "Bootstraping Vtiger... ";
-chdir('/var/www/html');
-if (!file_exists('config.inc.php')) { die("config.inc.php missing"); }
+define('vtiger_exit', true);
 
 require_once 'config.inc.php';
 require_once 'include/utils/utils.php';
-
-echo "Utils loaded. Loading Users... ";
-require_once 'modules/Users/Users.php';
-echo "Users loaded. Loading Creator... ";
-require_once 'modules/Users/CreateUserPrivilegeFile.php';
-echo "Creator loaded.\n";
+require_once 'include/database/PearDatabase.php';
 
 global \$adb;
-echo "Starting Privilege Regeneration...\n";
-
-// Use RAW connection because \$adb seems broken in this context
-include 'config.inc.php';
-\$raw_conn = new mysqli(\$dbconfig['db_server'], \$dbconfig['db_username'], \$dbconfig['db_password'], \$dbconfig['db_name'], \$dbconfig['db_port']);
-
-if (\$raw_conn->connect_error) {
-    die("Raw Connection failed: " . \$raw_conn->connect_error);
-}
-
-\$query = "SELECT id, user_name FROM vtiger_users WHERE deleted=0";
-echo "Executing raw query: \$query\n";
-\$result = \$raw_conn->query(\$query);
-
-if(\$result) {
-    \$count = \$result->num_rows;
-    echo "Query successful. Users found: \$count\n";
-    while(\$row = \$result->fetch_assoc()) {
-        \$userId = \$row['id'];
-        \$userName = \$row['user_name'];
-        echo "Generating privileges for User ID: \$userId (\$userName) ... ";
-        // We use the Vtiger function for generation, ensuring \$adb is somewhat available if needed by the function
-        // Re-ensure adb is global
         global \$adb;
         createUserPrivilegesfile(\$userId);
         echo "Done.\n";
@@ -293,6 +259,9 @@ ob_start();
 try {
     chdir('/var/www/html');
     echo "Current Dir: " . getcwd() . "<br>";
+    
+    // Fix: Include Utils so checkFileAccessForInclusion exists
+    require_once 'include/utils/utils.php';
     
     if (!file_exists('includes/Loader.php')) {
         echo "CRITICAL: includes/Loader.php MISSING.<br>";
