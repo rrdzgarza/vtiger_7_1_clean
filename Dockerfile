@@ -36,7 +36,14 @@ RUN echo "date.timezone = UTC" > /usr/local/etc/php/conf.d/vtiger.ini \
 # 5. Workdir
 WORKDIR /var/www/html
 
-# 6. Entrypoint
+# 6. Copy Maintenance Tools (to a safe location first)
+# We copy them to /usr/src/vtiger-tools so the entrypoint can restore them
+# even if /var/www/html is overwritten by a volume or manual copy
+RUN mkdir -p /usr/src/vtiger-tools
+COPY recalculate.php /usr/src/vtiger-tools/
+COPY test_debug.php /usr/src/vtiger-tools/
+
+# 7. Entrypoint
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
