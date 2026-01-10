@@ -130,7 +130,15 @@ if [ -f /var/www/html/config.inc.php ]; then
 
 
 
+    # Remove specific check logic in WebUI.php that causes redirect loops behind proxies
+    # We use sed to comment out the block lines 107-113 approx
+    # Target: if ($site_URL && stripos($request_URL, $site_URL) !== 0){
+    sed -i 's|if ($site_URL && stripos($request_URL, $site_URL) !== 0){|// if ($site_URL \&\& stripos($request_URL, $site_URL) !== 0){|g' /var/www/html/includes/main/WebUI.php
+    sed -i 's|header("Location: $site_URL",TRUE,301);|// header("Location: $site_URL",TRUE,301);|g' /var/www/html/includes/main/WebUI.php
+    sed -i 's|exit;|// exit;|g' /var/www/html/includes/main/WebUI.php
+
     # Create temporary regeneration script
+    # (Restored header)
     cat <<EOF > /var/www/html/recalculate.php
 <?php
 error_reporting(E_ALL);
