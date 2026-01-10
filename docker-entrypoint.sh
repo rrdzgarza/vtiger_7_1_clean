@@ -78,6 +78,11 @@ if [ -f /var/www/html/config.inc.php ]; then
         sed -i "s|\$site_URL = .*|\$site_URL = 'https://vtiger-test1.caperti.com/';|" /var/www/html/config.inc.php
     fi
     
+    # Force $root_directory to have a trailing slash by appending to the end (Last One Wins)
+    # The previous sed failed, likely due to formatting. This is guaranteed.
+    echo "Force updating root_directory..."
+    echo "\$root_directory = '/var/www/html/';" >> /var/www/html/config.inc.php
+    
     # Ensure correct permissions
     chown -R www-data:www-data /var/www/html
     
@@ -265,7 +270,11 @@ echo "<h2>Configuration Check</h2>";
 echo "<strong>Configured site_URL:</strong> " . \$site_URL . "<br>";
 echo "<strong>Configured root_directory:</strong> " . \$root_directory . "<br>";
 echo "<strong>Current HTTP_HOST:</strong> " . \$_SERVER['HTTP_HOST'] . "<br>";
-echo "<strong>Current SCRIPT_NAME:</strong> " . \$_SERVER['SCRIPT_NAME'] . "<br>";
+echo "Current SCRIPT_NAME: " . \$_SERVER['SCRIPT_NAME'] . "<br>";
+
+echo "<h2>Ghost File Check</h2>";
+echo "Listing /var/www/ (checking for mislocated files due to missing slash):<br>";
+print_r(scandir('/var/www/'));
 
 echo "<h2>Index Include Test</h2>";
 echo "Attempting to include index.php (partial execution)...<br>";
