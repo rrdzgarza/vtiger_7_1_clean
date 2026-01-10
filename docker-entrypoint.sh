@@ -14,7 +14,6 @@ if [ ! -s /var/www/html/config.inc.php ]; then
     fi
 fi
 
-fi
 
 # Replace Template Placeholders if they exist (handling config from template)
 if [ -f /var/www/html/config.inc.php ]; then
