@@ -93,12 +93,24 @@ if [ -f /var/www/html/config.inc.php ]; then
         echo "Detected missing user_privileges for existing install. Regenerating..."
         cat <<EOF > /var/www/html/recalculate.php
 <?php
-// Minimal bootstrap
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Limit memory ensuring it runs
+ini_set('memory_limit', '512M');
+
+echo "Bootstraping Vtiger... ";
 chdir('/var/www/html');
+if (!file_exists('config.inc.php')) { die("config.inc.php missing"); }
+
 require_once 'config.inc.php';
 require_once 'include/utils/utils.php';
+
+echo "Utils loaded. Loading Users... ";
 require_once 'modules/Users/Users.php';
+echo "Users loaded. Loading Creator... ";
 require_once 'modules/Users/CreateUserPrivilegesFile.php';
+echo "Creator loaded.\n";
 
 global \$adb;
 echo "Starting Privilege Regeneration...\n";
