@@ -114,15 +114,31 @@ echo "Creator loaded.\n";
 
 global \$adb;
 echo "Starting Privilege Regeneration...\n";
-\$query = "SELECT id FROM vtiger_users WHERE deleted=0";
+
+// Debug connection
+if (!\$adb) { die("Fatal: \$adb object is null.\n"); }
+// echo "DB Status: " . print_r(\$adb, true); 
+
+\$query = "SELECT id, user_name FROM vtiger_users";
+echo "Executing query: \$query\n";
 \$result = \$adb->pquery(\$query, array());
+
 if(\$result) {
+    \$count = \$adb->num_rows(\$result);
+    echo "Query successful. Rows found: \$count\n";
+    if (\$count == 0) {
+        echo "WARNING: No users found in vtiger_users table!\n";
+    }
     while(\$row = \$adb->fetch_array(\$result)) {
         \$userId = \$row['id'];
-        echo "Generating privileges for User ID: \$userId ... ";
+        \$userName = \$row['user_name'];
+        echo "Generating privileges for User ID: \$userId (\$userName) ... ";
         createUserPrivilegesfile(\$userId);
         echo "Done.\n";
     }
+} else {
+    echo "Query FAILED.\n";
+    // echo "Error: " . \$adb->database->ErrorMsg(); // Might vary by ADODB version
 }
 echo "Privilege regeneration complete.\n";
 ?>
@@ -217,6 +233,15 @@ if (file_exists('/var/www/html/modules/Users/CreateUserPrivilegesFile.php')) {
     echo "<strong>MISSING!</strong><br>";
     echo "Listing modules/Users/:<br>";
     print_r(scandir('/var/www/html/modules/Users'));
+}
+
+echo "<h3>User Count Check</h3>";
+\$user_res = \$conn->query("SELECT COUNT(*) as c FROM vtiger_users");
+if (\$user_res) {
+    \$row = \$user_res->fetch_assoc();
+    echo "Total Users in DB: " . \$row['c'] . "<br>";
+} else {
+    echo "Failed to query vtiger_users: " . \$conn->error . "<br>";
 }
 ?>
 EOF
