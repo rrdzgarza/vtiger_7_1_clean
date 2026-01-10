@@ -79,7 +79,10 @@ if [ -f /var/www/html/config.inc.php ]; then
     fi
     
     # Force $root_directory to have a trailing slash by appending to the end (Last One Wins)
-    # The previous sed failed, likely due to formatting. This is guaranteed.
+    # CRITICAL FIX: config.template.php often ends with '?>', so appending puts code OUTSIDE PHP tags.
+    # We must strip the closing tag first to ensure the appended code is executed and not printed.
+    sed -i 's/?>//g' /var/www/html/config.inc.php
+    
     echo "Force updating root_directory..."
     echo "\$root_directory = '/var/www/html/';" >> /var/www/html/config.inc.php
     
