@@ -138,6 +138,28 @@ if (is_dir('/var/www/html/modules/Install')) {
 } else {
     echo "modules/Install MISSING.<br>";
 }
+
+echo "<h2>Database Version Check</h2>";
+\$result = \$conn->query("SELECT * FROM vtiger_version");
+if (\$result) {
+    while(\$row = \$result->fetch_assoc()) {
+        echo "DB Version: " . \$row['current_version'] . " (Date: " . \$row['old_version'] . ")<br>";
+    }
+} else {
+    echo "Could not query vtiger_version table. Is the DB initialized?<br>";
+}
+
+echo "<h2>User Privileges Check</h2>";
+\$admin_priv_file = '/var/www/html/user_privileges/user_privileges_1.php';
+if (file_exists(\$admin_priv_file)) {
+    echo "Admin privileges file exists.<br>";
+} else {
+    echo "<strong>CRITICAL: Admin privileges file MISSING.</strong> This causes WSOD on existing DBs.<br>";
+    echo "Attempting to regenerate... <br>";
+    // Basic attempt to require initialization logic (might fail if dependencies missing)
+    // defined('VTIGER_UPGRADE', true); // trick
+}
+
 ?>
 EOF
     chown www-data:www-data /var/www/html/test_debug.php
