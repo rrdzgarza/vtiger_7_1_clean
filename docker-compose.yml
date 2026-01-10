@@ -3,17 +3,14 @@ services:
     build: .
     container_name: vtiger_crm
     restart: always
-    # ports:
-    #   - "8080:80" # Not needed if using Traefik/Dokploy handling
     env_file:
       - .env
     volumes:
+      # Data Persistence is CRITICAL for manual copy strategy
+      # Files copied via 'docker cp' or 'restaura.sh' must survive redeploys
       - vtiger_data:/var/www/html
       - vtiger_storage:/var/www/html/storage
       - vtiger_logs:/var/log/apache2
-      # environment:
-      # Optional: Override .env vars here
-      # - DB_HOSTNAME=remote_host
     networks:
       - default
 
