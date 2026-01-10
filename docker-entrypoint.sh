@@ -101,33 +101,73 @@ if [ -f /var/www/html/config.inc.php ]; then
     # REGENERATE PRIVILEGES IF MISSING (For existing DBs)
     if [ ! -f /var/www/html/user_privileges/user_privileges_1.php ]; then
         echo "Detected missing user_privileges for existing install. Regenerating..."
-        cat <<EOF > /var/www/html/recalculate.php
+EOF
+
+    # Create temporary regeneration script
+    cat <<EOF > /var/www/html/recalculate.php
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 define('vtiger_exit', true);
 
-require_once 'config.inc.php';
-require_once 'include/utils/utils.php';
-require_once 'include/database/PearDatabase.php';
+// 1. Force CWD
+chdir(dirname(__FILE__));
 
-global \$adb;
-        global \$adb;
-        createUserPrivilegesfile(\$userId);
-        echo "Done.\n";
+// 2. Shutdown Handler for catastrophic errors
+register_shutdown_function(function() {
+    \$error = error_get_last();
+    if (\$error && (\$error['type'] === E_ERROR || \$error['type'] === E_PARSE || \$error['type'] === E_CORE_ERROR || \$error['type'] === E_COMPILE_ERROR)) {
+        echo "FATAL SHUTDOWN: " . \$error['message'] . " in " . \$error['file'] . ":" . \$error['line'] . "\n";
+    }
+    echo "Script finished (shutdown).\n";
+});
+
+try {
+    require_once 'config.inc.php';
+    require_once 'include/utils/utils.php';
+    require_once 'include/database/PearDatabase.php';
+
+    global \$adb;
+    if (empty(\$adb)) {
+        \$adb = PearDatabase::getInstance();
+        \$adb->connect();
     }
     
-    // Also generate Tab Data (Menu structure)
-    echo "Generating Tab Data (tabdata.php)... ";
-    require_once 'include/utils/UserInfoUtil.php';
-    create_tab_data_file();
-    create_parenttab_data_file();
-    echo "Done.\n";
+    if (!\$adb || !\$adb->database) {
+        throw new Exception("ADB instantiation failed. Check DB credentials.");
+    }
     
-} else {
-    echo "Query FAILED: " . \$raw_conn->error . "\n";
+    echo "ADB Connected. DB Type: " . \$adb->dbType . "\n";
+
+    require_once 'modules/Users/CreateUserPrivilegeFile.php';
+
+    // Bypass ADB for the loop to avoid wrapper issues, but use ADB inside the function
+    \$mysqli = new mysqli(\$dbconfig['db_hostname'], \$dbconfig['db_username'], \$dbconfig['db_password'], \$dbconfig['db_name']);
+    if (\$mysqli->connect_error) {
+        die("Connection failed: " . \$mysqli->connect_error);
+    }
+
+    \$result = \$mysqli->query("SELECT id, user_name FROM vtiger_users WHERE deleted=0");
+    echo "Users found: " . \$result->num_rows . "\n";
+
+    while (\$row = \$result->fetch_assoc()) {
+        echo "Generating privileges for User ID: " . \$row['id'] . " (" . \$row['user_name'] . ") ... ";
+        try {
+            createUserPrivilegesfile(\$row['id']);
+            echo "Done.\n";
+        } catch (Throwable \$t) {
+             echo "FATAL ERROR (Caught): " . \$t->getMessage() . " in " . \$t->getFile() . ":" . \$t->getLine() . "\n";
+        } catch (Exception \$e) {
+            echo "FAILED: " . \$e->getMessage() . "\n";
+        }
+    }
+
+    require_once('modules/Users/Users.php');
+    echo "Privilege regeneration complete.\n";
+
+} catch (Throwable \$t) {
+    echo "GLOBAL CRASH: " . \$t->getMessage() . "\n";
 }
-echo "Privilege regeneration complete.\n";
 ?>
 EOF
         # Run it with set +e so we don't kill the container if it fails
