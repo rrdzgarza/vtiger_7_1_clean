@@ -29,6 +29,10 @@ if [ -f /var/www/html/config.inc.php ]; then
     # Set Port (remove colon if present in template)
     sed -i "s|:_DBC_PORT_|3306|g" /var/www/html/config.inc.php
     sed -i "s|_DBC_PORT_|3306|g" /var/www/html/config.inc.php
+    
+    # Fix root_directory to satisfy Vtiger security check
+    # We use regex to match whatever placeholder or value is there
+    sed -i "s|^\$root_directory = .*|\$root_directory = '/var/www/html/';|g" /var/www/html/config.inc.php
 fi
 
 # Apply Envs if config exists and vars are set (Legacy variable names)
