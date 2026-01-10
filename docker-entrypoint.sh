@@ -207,10 +207,17 @@ if (file_exists(\$admin_priv_file)) {
 } else {
     echo "<strong>CRITICAL: Admin privileges file MISSING.</strong> This causes WSOD on existing DBs.<br>";
     echo "Attempting to regenerate... <br>";
-    // Basic attempt to require initialization logic (might fail if dependencies missing)
-    // defined('VTIGER_UPGRADE', true); // trick
 }
 
+echo "<h3>File System Check</h3>";
+echo "Checking modules/Users/CreateUserPrivilegesFile.php... ";
+if (file_exists('/var/www/html/modules/Users/CreateUserPrivilegesFile.php')) {
+    echo "FOUND.<br>";
+} else {
+    echo "<strong>MISSING!</strong><br>";
+    echo "Listing modules/Users/:<br>";
+    print_r(scandir('/var/www/html/modules/Users'));
+}
 ?>
 EOF
     chown www-data:www-data /var/www/html/test_debug.php
