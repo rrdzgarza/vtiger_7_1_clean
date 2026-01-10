@@ -115,9 +115,16 @@ if(\$result) {
 echo "Privilege regeneration complete.\n";
 ?>
 EOF
-        # Run it
-        php /var/www/html/recalculate.php
-        rm /var/www/html/recalculate.php
+        # Run it with set +e so we don't kill the container if it fails
+        set +e
+        echo "Running privilege regeneration..."
+        php /var/www/html/recalculate.php > /var/www/html/recalc_log.txt 2>&1
+        RECALC_STATUS=$?
+        echo "Regeneration finished with status $RECALC_STATUS. Log saved to recalc_log.txt"
+        set -e
+        
+        # Don't remove it yet so we can debug if needed
+        # rm /var/www/html/recalculate.php
     fi
     
     # DEBUG: Print config to logs to verify generation (hide sensitive pass first?)
