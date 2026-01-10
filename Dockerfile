@@ -2,7 +2,11 @@ FROM php:7.2-apache
 
 # 1. Install dependencies and extensions
 # Added libc-client-dev and libkrb5-dev for IMAP support
-RUN apt-get update && apt-get install -y \
+# FIX: Debian Buster is EOL, so we switch to archive.debian.org
+RUN echo "deb http://archive.debian.org/debian buster main" > /etc/apt/sources.list \
+  && echo "deb http://archive.debian.org/debian-security buster/updates main" >> /etc/apt/sources.list \
+  && apt-get --allow-releaseinfo-change update \
+  && apt-get install -y \
   libpng-dev \
   libjpeg-dev \
   libxml2-dev \
