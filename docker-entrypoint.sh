@@ -124,6 +124,20 @@ if (\$conn->connect_error) {
   die("Connection failed: " . \$conn->connect_error);
 }
 echo "Connected successfully to Database!";
+
+echo "<h2>Installation Check</h2>";
+echo "Looking for install.php...<br>";
+\$install_files = glob('/var/www/html/**/install.php');
+print_r(\$install_files);
+
+echo "<br>Checking modules/Install directory:<br>";
+if (is_dir('/var/www/html/modules/Install')) {
+    echo "modules/Install exists.<br>";
+    \$scandir = scandir('/var/www/html/modules/Install');
+    print_r(\$scandir);
+} else {
+    echo "modules/Install MISSING.<br>";
+}
 ?>
 EOF
     chown www-data:www-data /var/www/html/test_debug.php
