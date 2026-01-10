@@ -109,7 +109,7 @@ require_once 'include/utils/utils.php';
 echo "Utils loaded. Loading Users... ";
 require_once 'modules/Users/Users.php';
 echo "Users loaded. Loading Creator... ";
-require_once 'modules/Users/CreateUserPrivilegesFile.php';
+require_once 'modules/Users/CreateUserPrivilegeFile.php';
 echo "Creator loaded.\n";
 
 global \$adb;
