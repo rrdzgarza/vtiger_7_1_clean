@@ -279,6 +279,42 @@ echo "<h2>Ghost File Check</h2>";
 echo "Listing /var/www/ (checking for mislocated files due to missing slash):<br>";
 print_r(scandir('/var/www/'));
 
+echo "<h2>Apache Error Log (Last 20 lines)</h2>";
+// Try to read apache log (might fail due to permissions, but worth a try)
+\$log_file = '/var/log/apache2/error.log';
+if (is_readable(\$log_file)) {
+    echo "<pre>" . htmlspecialchars(shell_exec("tail -n 20 \$log_file")) . "</pre>";
+} else {
+    echo "Cannot read $log_file (Permission denied or missing).<br>";
+}
+
+echo "<h2>Viewer/Smarty Test</h2>";
+ob_start();
+try {
+    chdir('/var/www/html');
+    require_once 'includes/Loader.php';
+    vimport('includes.runtime.Viewer');
+    
+    if (class_exists('Vtiger_Viewer')) {
+        echo "Vtiger_Viewer class FOUND.<br>";
+        \$viewer = new Vtiger_Viewer();
+        echo "Vtiger_Viewer instantiated.<br>";
+        // Checking Smarty cache dir
+        echo "Smarty Compile Dir: test/templates_c <br>";
+        if (is_writable('test/templates_c')) {
+            echo "test/templates_c is WRITABLE.<br>";
+        } else {
+            echo "test/templates_c is NOT WRITABLE.<br>";
+        }
+    } else {
+        echo "Vtiger_Viewer class MISSING.<br>";
+    }
+} catch (Exception \$e) {
+    echo "Viewer/Smarty Error: " . \$e->getMessage() . "<br>";
+}
+\$v_out = ob_get_clean();
+echo \$v_out;
+
 echo "<h2>Index Include Test</h2>";
 echo "Attempting to include index.php (partial execution)...<br>";
 // We buffer output to catch immediate startup errors without rendering the whole page
