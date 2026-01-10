@@ -14,6 +14,7 @@ RUN echo "deb http://archive.debian.org/debian buster main" > /etc/apt/sources.l
   libfreetype6-dev \
   libc-client-dev \
   libkrb5-dev \
+  libcurl4-openssl-dev \
   wget \
   unzip \
   && rm -rf /var/lib/apt/lists/*
@@ -21,7 +22,7 @@ RUN echo "deb http://archive.debian.org/debian buster main" > /etc/apt/sources.l
 # Configure and install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
   && docker-php-ext-configure imap --with-kerberos --with-imap-ssl \
-  && docker-php-ext-install -j$(nproc) gd mysqli pdo_mysql soap zip imap mbstring
+  && docker-php-ext-install -j$(nproc) gd mysqli pdo_mysql soap zip imap mbstring curl
 
 # Enable Apache Rewrite Module
 RUN a2enmod rewrite

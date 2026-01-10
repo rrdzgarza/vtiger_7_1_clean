@@ -92,6 +92,38 @@ if [ -f /var/www/html/config.inc.php ]; then
     # If syntax is ok, we print the first 20 lines to check headers
     head -n 50 /var/www/html/config.inc.php
     echo "-------------------------------"
+    
+    # DEBUG: Create specific test file to check extensions and DB independently
+    cat <<EOF > /var/www/html/test_debug.php
+<?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+echo "<h1>Vtiger Environment Check</h1>";
+echo "<h2>PHP Extensions</h2>";
+\$extensions = get_loaded_extensions();
+echo "cURL: " . (in_array('curl', \$extensions) ? 'OK' : 'MISSING') . "<br>";
+echo "MBString: " . (in_array('mbstring', \$extensions) ? 'OK' : 'MISSING') . "<br>";
+echo "IMAP: " . (in_array('imap', \$extensions) ? 'OK' : 'MISSING') . "<br>";
+echo "GD: " . (in_array('gd', \$extensions) ? 'OK' : 'MISSING') . "<br>";
+echo "MySQLi: " . (in_array('mysqli', \$extensions) ? 'OK' : 'MISSING') . "<br>";
+
+echo "<h2>Database Connection</h2>";
+include 'config.inc.php';
+echo "Server: " . \$dbconfig['db_server'] . "<br>";
+echo "User: " . \$dbconfig['db_username'] . "<br>";
+echo "DB: " . \$dbconfig['db_name'] . "<br>";
+
+\$conn = new mysqli(\$dbconfig['db_server'], \$dbconfig['db_username'], \$dbconfig['db_password'], \$dbconfig['db_name'], \$dbconfig['db_port']);
+
+if (\$conn->connect_error) {
+  die("Connection failed: " . \$conn->connect_error);
+}
+echo "Connected successfully to Database!";
+?>
+EOF
+    chown www-data:www-data /var/www/html/test_debug.php
+
 fi
 
 exec apache2-foreground
