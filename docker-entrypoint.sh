@@ -70,6 +70,10 @@ if [ -f /var/www/html/config.inc.php ]; then
     # Use | delimiter for URL to handle slashes
     if [ ! -z "$SITE_URL" ]; then 
         sed -i "s|\$site_URL = .*|\$site_URL = '${SITE_URL}';|" /var/www/html/config.inc.php
+    else 
+        # Fallback if SITE_URL is not provided: try to deduce or set a default to avoid WSOD
+        # Vtiger requires a valid URL here.
+        sed -i "s|\$site_URL = .*|\$site_URL = 'https://vtiger-test1.caperti.com/';|" /var/www/html/config.inc.php
     fi
     
     # Ensure correct permissions
