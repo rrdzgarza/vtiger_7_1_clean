@@ -258,6 +258,36 @@ if (\$user_res) {
 } else {
     echo "Failed to query vtiger_users: " . \$conn->error . "<br>";
 }
+
+echo "<h2>Configuration Check</h2>";
+echo "<strong>Configured site_URL:</strong> " . \$site_URL . "<br>";
+echo "<strong>Configured root_directory:</strong> " . \$root_directory . "<br>";
+echo "<strong>Current HTTP_HOST:</strong> " . \$_SERVER['HTTP_HOST'] . "<br>";
+echo "<strong>Current SCRIPT_NAME:</strong> " . \$_SERVER['SCRIPT_NAME'] . "<br>";
+
+echo "<h2>Index Include Test</h2>";
+echo "Attempting to include index.php (partial execution)...<br>";
+// We buffer output to catch immediate startup errors without rendering the whole page
+ob_start();
+try {
+    // Define a constant to prevent index.php from executing full dispatch if possible, 
+    // or just let it run a bit. 
+    // Vtiger doesn't have a 'don't execute' flag, so this might crash this script too if it dies.
+    // But helpful to see if it throws a catchable exception.
+    include_once 'config.inc.php';
+    // We don't include index.php because it usually has 'exit'.
+    // Instead we check for VtigerWebserviceObject which is common failure.
+    if (file_exists('include/Webservices/VtigerWebserviceObject.php')) {
+         echo "VtigerWebserviceObject.php found.<br>";
+    } else {
+         echo "VtigerWebserviceObject.php MISSING.<br>";
+    }
+} catch (Exception \$e) {
+    echo "Caught Exception: " . \$e->getMessage() . "<br>";
+}
+\$output = ob_get_clean();
+echo "Buffered Output from include check: <pre>" . htmlspecialchars(substr(\$output, 0, 500)) . "</pre>";
+
 ?>
 EOF
     chown www-data:www-data /var/www/html/test_debug.php
