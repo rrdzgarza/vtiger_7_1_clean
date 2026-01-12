@@ -46,6 +46,11 @@ if [ -f /var/www/html/config.inc.php ]; then
     # Check if we already injected it to avoid duplicates
     if ! grep -q "DOCKER_PROXY_FIX" /var/www/html/config.inc.php; then
         echo "Injecting Reverse Proxy Fix into config.inc.php..."
+        
+        # CRITICAL FIX: Remove closing PHP tag '?>' (and any trailing whitespace) 
+        # so we don't accidentally append text outside PHP mode.
+        sed -i 's/?>\s*$//' /var/www/html/config.inc.php
+        
         cat <<'EOPHP' >> /var/www/html/config.inc.php
 
 // --- DOCKER_PROXY_FIX START ---
@@ -62,6 +67,7 @@ if (isset($site_URL)) {
     }
 }
 // --- DOCKER_PROXY_FIX END ---
+?>
 EOPHP
     fi
     
