@@ -17,6 +17,7 @@ RUN echo "deb http://archive.debian.org/debian buster main" > /etc/apt/sources.l
     libcurl4-openssl-dev \
     libgmp-dev \
     libicu-dev \
+    nano \
     unzip \
     && rm -rf /var/lib/apt/lists/*
 
