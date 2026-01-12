@@ -18,6 +18,7 @@ RUN echo "deb http://archive.debian.org/debian buster main" > /etc/apt/sources.l
     libgmp-dev \
     libicu-dev \
     nano \
+    vim \
     unzip \
     && rm -rf /var/lib/apt/lists/*
 
