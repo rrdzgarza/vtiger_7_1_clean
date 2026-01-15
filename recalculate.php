@@ -65,11 +65,27 @@ try {
     // --- STEP 3: ATTEMPT TO GENERATE OTHERS (RISKY) ---
     // We use raw mysqli to get list of IDs
     // Fix for Docker/mysqli: separate host and port
-    // FORCE EXTERNAl CONNECTION (User Request)
-    $db_host_target = 'vtiger-test.caperti.com';
-    $db_port_target = 33061;
+    // Connection Variables
+    $db_host_target = $dbconfig['db_server'];
+    $db_port_target = 3306;
 
-    echo "CONN: FORCE Connecting to Host=[$db_host_target] Port=[$db_port_target]...\n";
+    // Fallback if db_server is empty (common in older configs)
+    if (empty($db_host_target) && !empty($dbconfig['db_hostname'])) {
+        $parts = explode(':', $dbconfig['db_hostname']);
+        $db_host_target = $parts[0];
+        if (isset($parts[1])) {
+            $db_port_target = (int) $parts[1];
+        }
+    }
+
+    // Override port if specified directly
+    if (isset($dbconfig['db_port']) && !empty($dbconfig['db_port'])) {
+        $clean_port = (int) str_replace(':', '', $dbconfig['db_port']);
+        if ($clean_port > 0)
+            $db_port_target = $clean_port;
+    }
+
+    echo "CONN: Connecting to Host=[$db_host_target] Port=[$db_port_target]...\n";
 
     $mysqli = new mysqli($db_host_target, $dbconfig['db_username'], $dbconfig['db_password'], $dbconfig['db_name'], $db_port_target);
     if ($mysqli->connect_error) {
