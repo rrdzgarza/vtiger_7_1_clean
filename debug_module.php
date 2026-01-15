@@ -79,13 +79,29 @@ try {
 }
 
 echo "<h2>6. List Query Generation Test</h2>";
+echo "<h2>6. Class Inspection</h2>";
 try {
-    echo "Generating List Query for $target_module... ";
-    $query = $focus->getListQuery($target_module);
-    echo "Done.<br>";
-    echo "<textarea rows='5' cols='80'>$query</textarea><br>";
+    echo "Checking inheritance...<br>";
+    echo "Parent Class: " . get_parent_class($focus) . "<br>";
+
+    echo "Checking exists method 'getListQuery': ";
+    if (method_exists($focus, 'getListQuery')) {
+        echo "YES.<br>";
+        echo "Generating List Query for $target_module... ";
+        $query = $focus->getListQuery($target_module);
+        echo "Done.<br>";
+    } else {
+        echo "<strong style='color:red'>NO (Method Missing)</strong><br>";
+        echo "Dumping Module Methods (first 10):<br>";
+        $methods = get_class_methods($focus);
+        echo "<pre>" . print_r(array_slice($methods, 0, 10), true) . "</pre>";
+
+        echo "Checking CRMEntity location...<br>";
+        $ref = new ReflectionClass('CRMEntity');
+        echo "Defined in: " . $ref->getFileName() . "<br>";
+    }
 } catch (Throwable $t) {
-    echo "<br><strong style='color:red'>FAILED to generate query:</strong> " . $t->getMessage();
+    echo "<br><strong style='color:red'>FAILED during inspection:</strong> " . $t->getMessage();
 }
 
 echo "<h2>7. Memory Usage</h2>";
