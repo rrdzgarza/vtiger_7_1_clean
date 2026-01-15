@@ -22,7 +22,33 @@ $conn = new mysqli($dbconfig['db_server'], $dbconfig['db_username'], $dbconfig['
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
-echo "Connected successfully to Database!";
+echo "Connected successfully to Database!<br>";
+// DEEP DEBUGGING
+$thread_id = $conn->thread_id;
+$current_db = "UNKNOWN";
+if ($res = $conn->query("SELECT DATABASE()")) {
+    $row = $res->fetch_row();
+    $current_db = $row[0];
+}
+echo "<strong>Connection Debug Info:</strong><br>";
+echo "MySQL Thread ID: $thread_id<br>";
+echo "Current Database: <strong>$current_db</strong><br>";
+echo "Target Database (Config): " . $dbconfig['db_name'] . "<br>";
+
+if ($current_db != $dbconfig['db_name']) {
+    echo "<strong style='color:red'>WARNING: CONNECTED TO WRONG DATABASE!</strong><br>";
+}
+
+// Check for table existence in Schema
+echo "Checking Information Schema for 'vtiger_version'...<br>";
+$check_table = $conn->query("SELECT TABLE_NAME, TABLE_SCHEMA FROM information_schema.TABLES WHERE TABLE_NAME = 'vtiger_version'");
+if ($check_table && $check_table->num_rows > 0) {
+    while ($t = $check_table->fetch_assoc()) {
+        echo "Found table in schema: " . $t['TABLE_SCHEMA'] . "<br>";
+    }
+} else {
+    echo "Table 'vtiger_version' NOT FOUND in any visible schema.<br>";
+}
 
 echo "<h2>Installation Check</h2>";
 echo "Looking for install.php...<br>";
