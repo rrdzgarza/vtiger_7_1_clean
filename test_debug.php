@@ -13,11 +13,32 @@ echo "MySQLi: " . (in_array('mysqli', $extensions) ? 'OK' : 'MISSING') . "<br>";
 
 echo "<h2>Database Connection</h2>";
 include 'config.inc.php';
-echo "Server: " . $dbconfig['db_server'] . "<br>";
-echo "User: " . $dbconfig['db_username'] . "<br>";
-echo "DB: " . $dbconfig['db_name'] . "<br>";
+// Connection Parameters Debug
+$db_host = $dbconfig['db_server'];
+$db_user = $dbconfig['db_username'];
+$db_pass = $dbconfig['db_password'];
+$db_name = $dbconfig['db_name'];
+$db_port = $dbconfig['db_port'];
 
-$conn = new mysqli($dbconfig['db_server'], $dbconfig['db_username'], $dbconfig['db_password'], $dbconfig['db_name'], $dbconfig['db_port']);
+// Handle potential port in host string (legacy support)
+if (strpos($db_host, ':') !== false) {
+    list($host_part, $port_part) = explode(':', $db_host);
+    $db_host = $host_part;
+    if (empty($db_port) || $db_port == 0) {
+        $db_port = $port_part;
+    }
+}
+
+// Ensure port is integer
+$db_port = (int) str_replace(':', '', $db_port);
+
+echo "<strong>Attempting Connection with:</strong><br>";
+echo "Host: [$db_host]<br>";
+echo "User: [$db_user]<br>";
+echo "DB:   [$db_name]<br>";
+echo "Port: [$db_port]<br>";
+
+$conn = new mysqli($db_host, $db_user, $db_pass, $db_name, $db_port);
 
 // Explicit Connection Check
 if ($conn->connect_errno) {
