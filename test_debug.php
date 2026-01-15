@@ -55,7 +55,7 @@ if ($current_db != $dbconfig['db_name']) {
 
 // Check for table existence in Schema
 echo "Checking Information Schema for 'vtiger_version'...<br>";
-$check_table = $conn->query("SELECT TABLE_NAME, TABLE_SCHEMA FROM information_schema.TABLES WHERE TABLE_NAME = 'vtiger_version'");
+$check_table = $conn->query("USE vtiger;SELECT TABLE_NAME, TABLE_SCHEMA FROM information_schema.TABLES WHERE TABLE_NAME = 'vtiger_version'");
 if ($check_table && $check_table->num_rows > 0) {
     while ($t = $check_table->fetch_assoc()) {
         echo "Found table in schema: " . $t['TABLE_SCHEMA'] . "<br>";
