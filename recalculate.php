@@ -64,7 +64,12 @@ try {
 
     // --- STEP 3: ATTEMPT TO GENERATE OTHERS (RISKY) ---
     // We use raw mysqli to get list of IDs
-    $mysqli = new mysqli($dbconfig['db_hostname'], $dbconfig['db_username'], $dbconfig['db_password'], $dbconfig['db_name']);
+    // Fix for Docker/mysqli: separate host and port
+    $db_port = 3306;
+    if (isset($dbconfig['db_port']) && !empty($dbconfig['db_port'])) {
+        $db_port = (int) str_replace(':', '', $dbconfig['db_port']);
+    }
+    $mysqli = new mysqli($dbconfig['db_server'], $dbconfig['db_username'], $dbconfig['db_password'], $dbconfig['db_name'], $db_port);
     if ($mysqli->connect_error) {
         echo "DB Connection Warning: " . $mysqli->connect_error . "\n";
     } else {
