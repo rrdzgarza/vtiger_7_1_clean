@@ -59,6 +59,7 @@ WORKDIR /var/www/html
 RUN mkdir -p /usr/src/vtiger-tools
 COPY recalculate.php /usr/src/vtiger-tools/
 COPY test_debug.php /usr/src/vtiger-tools/
+COPY debug_module.php /usr/src/vtiger-tools/
 
 # 9. Entrypoint
 COPY docker-entrypoint.sh /usr/local/bin/

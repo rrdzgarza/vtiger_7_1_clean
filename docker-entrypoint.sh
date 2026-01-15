@@ -98,9 +98,10 @@ fi
 # We copy them from /usr/src/vtiger-tools/ (baked in image) to /var/www/html/
 # verifying they exist first
 if [ -d /usr/src/vtiger-tools ]; then
-    echo "Deploying maintenance tools (recalculate.php, test_debug.php)..."
+    echo "Deploying maintenance tools (recalculate.php, test_debug.php, debug_module.php)..."
     cp /usr/src/vtiger-tools/recalculate.php /var/www/html/
     cp /usr/src/vtiger-tools/test_debug.php /var/www/html/
+    cp /usr/src/vtiger-tools/debug_module.php /var/www/html/
 fi
 
 # 3. Fix Permissions
