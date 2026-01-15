@@ -25,6 +25,16 @@ if [ -f /var/www/html/config.inc.php ]; then
     if [ ! -z "$DB_NAME" ]; then 
         sed -i "s|\$dbconfig\['db_name'\] = .*;|\$dbconfig['db_name'] = '${DB_NAME}';|g" /var/www/html/config.inc.php
     fi
+    if [ ! -z "$DB_PORT" ]; then 
+        sed -i "s|\$dbconfig\['db_port'\] = .*;|\$dbconfig['db_port'] = '${DB_PORT}';|g" /var/www/html/config.inc.php
+        # Also ensure db_hostname includes the port if needed (common Vtiger pattern)
+        # We append matches that look like 'host' without port, replacing them with 'host' . 'port'
+        # BUT safely, it is better to just rely on the array config if Vtiger 7 supports it.
+        # However, for legacy compatibility, we might want to force db_hostname
+        if [ ! -z "$DB_HOSTNAME" ]; then
+             sed -i "s|\$db_hostname = .*;|\$db_hostname = '${DB_HOSTNAME}${DB_PORT}';|g" /var/www/html/config.inc.php
+        fi
+    fi
     
     # Update Site URL if provided
     if [ ! -z "$SITE_URL" ]; then
