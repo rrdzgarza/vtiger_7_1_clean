@@ -19,10 +19,24 @@ echo "DB: " . $dbconfig['db_name'] . "<br>";
 
 $conn = new mysqli($dbconfig['db_server'], $dbconfig['db_username'], $dbconfig['db_password'], $dbconfig['db_name'], $dbconfig['db_port']);
 
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+// Explicit Connection Check
+if ($conn->connect_errno) {
+    die("Connection failed (Errno: " . $conn->connect_errno . "): " . $conn->connect_error);
 }
-echo "Connected successfully to Database!<br>";
+echo "Connected successfully to Server!<br>";
+echo "Host Info: " . $conn->host_info . "<br>";
+
+// Explicit DB Selection Check
+$target_db = $dbconfig['db_name'];
+echo "Attempting to select database: '$target_db'... ";
+if ($conn->select_db($target_db)) {
+    echo "SUCCESS.<br>";
+} else {
+    echo "<strong style='color:red'>FAILED!</strong><br>";
+    echo "Error: " . $conn->error . "<br>";
+    echo "Errno: " . $conn->errno . "<br>";
+}
+
 // DEEP DEBUGGING
 $thread_id = $conn->thread_id;
 $current_db = "UNKNOWN";
