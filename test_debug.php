@@ -55,7 +55,7 @@ if ($current_db != $dbconfig['db_name']) {
 
 // Check for table existence in Schema
 echo "Checking Information Schema for 'vtiger_version'...<br>";
-$check_table = $conn->query("USE vtiger;SELECT TABLE_NAME, TABLE_SCHEMA FROM information_schema.TABLES WHERE TABLE_NAME = 'vtiger_version'");
+$check_table = $conn->query("SELECT TABLE_NAME, TABLE_SCHEMA FROM information_schema.TABLES WHERE TABLE_NAME = 'vtiger_version'");
 if ($check_table && $check_table->num_rows > 0) {
     while ($t = $check_table->fetch_assoc()) {
         echo "Found table in schema: " . $t['TABLE_SCHEMA'] . "<br>";
@@ -80,7 +80,7 @@ if (is_dir('/var/www/html/modules/Install')) {
 
 // DB Version Check with Error Reporting
 echo "<h2>Database Version Check</h2>";
-$result = $conn->query("SELECT * FROM vtiger_version");
+$result = $conn->query("USE vtiger;SELECT * FROM vtiger_version");
 if ($result) {
     while ($row = $result->fetch_assoc()) {
         echo "DB Version: " . $row['current_version'] . " (Date: " . $row['old_version'] . ")<br>";
