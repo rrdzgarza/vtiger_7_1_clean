@@ -101,7 +101,7 @@ if (is_dir('/var/www/html/modules/Install')) {
 
 // DB Version Check with Error Reporting
 echo "<h2>Database Version Check</h2>";
-$result = $conn->query("USE vtiger;SELECT * FROM vtiger_version");
+$result = $conn->query("SELECT * FROM vtiger_version");
 if ($result) {
     while ($row = $result->fetch_assoc()) {
         echo "DB Version: " . $row['current_version'] . " (Date: " . $row['old_version'] . ")<br>";
