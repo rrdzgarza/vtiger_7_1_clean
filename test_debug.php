@@ -38,6 +38,7 @@ if (is_dir('/var/www/html/modules/Install')) {
     echo "modules/Install MISSING.<br>";
 }
 
+// DB Version Check with Error Reporting
 echo "<h2>Database Version Check</h2>";
 $result = $conn->query("SELECT * FROM vtiger_version");
 if ($result) {
@@ -45,7 +46,9 @@ if ($result) {
         echo "DB Version: " . $row['current_version'] . " (Date: " . $row['old_version'] . ")<br>";
     }
 } else {
-    echo "Could not query vtiger_version table. Is the DB initialized?<br>";
+    echo "Could not query vtiger_version table.<br>";
+    echo "<strong>Error:</strong> " . $conn->error . "<br>";
+    echo "Is the DB name correct and tables imported?<br>";
 }
 
 echo "<h2>User Privileges Check</h2>";
@@ -58,8 +61,9 @@ if (file_exists($admin_priv_file)) {
 }
 
 echo "<h3>File System Check</h3>";
-echo "Checking modules/Users/CreateUserPrivilegesFile.php... ";
-if (file_exists('/var/www/html/modules/Users/CreateUserPrivilegesFile.php')) {
+// Fixed Typo: Privileges -> Privilege
+echo "Checking modules/Users/CreateUserPrivilegeFile.php... ";
+if (file_exists('/var/www/html/modules/Users/CreateUserPrivilegeFile.php')) {
     echo "FOUND.<br>";
 } else {
     echo "<strong>MISSING!</strong><br>";
