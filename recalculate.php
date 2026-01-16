@@ -26,93 +26,20 @@ try {
         $adb->connect();
     }
 
-    // --- STEP 1: GENERATE CRITICAL MENU FILES FIRST ---
-    // If the loop crashes later, we at least have these.
-    // echo "Generating Tab Data (tabdata.php)... ";
+    // --- STEP 1: LOAD VTIGER LIBRARIES ---
     require_once 'include/utils/UserInfoUtil.php';
-    // create_tab_data_file();
-    // create_parenttab_data_file();
-    // echo "Done.\n";
-
+    require_once 'include/utils/VtlibUtils.php';
+    require_once 'modules/Users/Users.php';
     require_once 'modules/Users/CreateUserPrivilegeFile.php';
 
-    // --- STEP 2: GENERATE ADMIN SKELETON (SAFE MODE) ---
-    // Bypassing complex recursion for Admin (ID 1) to ensure login works.
-    echo "Generating Skeleton Privileges for User ID: 1 (admin) ... ";
-    $handle = @fopen('user_privileges/user_privileges_1.php', "w+");
-    if ($handle) {
-        $content = "<?php\n";
-        $content .= "\$user_info = array('is_admin'=>'on');\n";
-        $content .= "\$is_admin = true;\n";
-        $content .= "\$current_user_roles = '';\n";
-        $content .= "\$current_user_parent_role_seq = '';\n";
-        $content .= "\$current_user_profiles = array();\n";
-        $content .= "\$profileGlobalPermission = array(1=>0, 2=>0);\n"; // 0 = Allowed
-        $content .= "\$profileTabsPermission = array();\n";
-        $content .= "\$profileActionPermission = array();\n";
-        $content .= "\$current_user_groups = array();\n";
-        $content .= "\$subordinate_roles = array();\n";
-        $content .= "\$parent_roles = array();\n";
-        $content .= "\$subordinate_roles_users = array();\n";
-        $content .= "?>";
-        fwrite($handle, $content);
-        fclose($handle);
-        echo "Done (Skeleton Written).\n";
-    } else {
-        echo "FAILED (File Write Error).\n";
-    }
+    // --- STEP 2: USE NATIVE REGENERATION ---
+    echo "Regenerating User Privileges using NATIVE Vtlib function...\n";
 
-    // --- STEP 3: ATTEMPT TO GENERATE OTHERS (RISKY) ---
-    // We use raw mysqli to get list of IDs
-    // Fix for Docker/mysqli: separate host and port
-    // Connection Variables
-    $db_host_target = $dbconfig['db_server'];
-    $db_port_target = 3306;
+    // This function handles everything: looping users, calling createUserPrivilegesfile, etc.
+    // It is the exact same function used by the Module Manager.
+    vtlib_RecreateUserPrivilegeFiles();
 
-    // Fallback if db_server is empty (common in older configs)
-    if (empty($db_host_target) && !empty($dbconfig['db_hostname'])) {
-        $parts = explode(':', $dbconfig['db_hostname']);
-        $db_host_target = $parts[0];
-        if (isset($parts[1])) {
-            $db_port_target = (int) $parts[1];
-        }
-    }
-
-    // Override port if specified directly
-    if (isset($dbconfig['db_port']) && !empty($dbconfig['db_port'])) {
-        $clean_port = (int) str_replace(':', '', $dbconfig['db_port']);
-        if ($clean_port > 0)
-            $db_port_target = $clean_port;
-    }
-
-    echo "CONN: Connecting to Host=[$db_host_target] Port=[$db_port_target]...\n";
-
-    $mysqli = new mysqli($db_host_target, $dbconfig['db_username'], $dbconfig['db_password'], $dbconfig['db_name'], $db_port_target);
-    if ($mysqli->connect_error) {
-        echo "DB Connection Warning: " . $mysqli->connect_error . "\n";
-    } else {
-        $result = $mysqli->query("SELECT id, user_name FROM vtiger_users WHERE deleted=0 AND id != 1");
-        if ($result) {
-            echo "Other Users found: " . $result->num_rows . "\n";
-            while ($row = $result->fetch_assoc()) {
-                echo "Generating privileges for User ID: " . $row['id'] . " (" . $row['user_name'] . ") ... ";
-                try {
-                    // Flush output before dangerous call
-                    flush();
-                    createUserPrivilegesfile($row['id']);
-                    echo "Done.\n";
-                } catch (Throwable $t) {
-                    echo "FATAL ERROR (Caught): " . $t->getMessage() . "\n";
-                } catch (Exception $e) {
-                    echo "FAILED: " . $e->getMessage() . "\n";
-                }
-                flush();
-            }
-        }
-    }
-
-    require_once('modules/Users/Users.php');
-    echo "Privilege regeneration complete.\n";
+    echo "Privilege regeneration complete (Native Pattern).\n";
 
 } catch (Throwable $t) {
     echo "GLOBAL CRASH: " . $t->getMessage() . "\n";
