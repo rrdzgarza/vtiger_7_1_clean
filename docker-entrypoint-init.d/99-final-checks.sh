@@ -9,9 +9,13 @@ echo "---------------------------------------------------"
 # FINAL PERMISSIONS CHECK
 # Just to ensure the root folder is owned by www-data if hooks missed it
 # or if previous scripts created files as root.
-if [ -d "/var/www/html" ]; then
-    echo " -> Ensuring /var/www/html ownership..."
-    chown www-data:www-data /var/www/html
+if [ "$SKIP_PERMISSIONS" = "true" ]; then
+    echo "⚠️  SKIP_PERMISSIONS=true. Skipping final chown."
+else
+    if [ -d "/var/www/html" ]; then
+        echo " -> Ensuring /var/www/html ownership..."
+        chown www-data:www-data /var/www/html
+    fi
 fi
 
 echo "✅ [HOOK] Ready for startup."
