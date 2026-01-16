@@ -28,11 +28,11 @@ try {
 
     // --- STEP 1: GENERATE CRITICAL MENU FILES FIRST ---
     // If the loop crashes later, we at least have these.
-    echo "Generating Tab Data (tabdata.php)... ";
+    // echo "Generating Tab Data (tabdata.php)... ";
     require_once 'include/utils/UserInfoUtil.php';
-    create_tab_data_file();
-    create_parenttab_data_file();
-    echo "Done.\n";
+    // create_tab_data_file();
+    // create_parenttab_data_file();
+    // echo "Done.\n";
 
     require_once 'modules/Users/CreateUserPrivilegeFile.php';
 
