@@ -32,12 +32,16 @@ else
 fi
 
 # 2. RECALCULATE PRIVILEGES
-echo " -> Regenerating User Privileges..."
-if [ -f /var/www/html/recalculate.php ]; then
-    php -f /var/www/html/recalculate.php > /tmp/recalculate.log 2>&1
-    echo "    (Done. Log in /tmp/recalculate.log)"
+if [ "$FORCE_RECALCULATE" = "true" ]; then
+    echo " -> FORCE_RECALCULATE=true. Regenerating User Privileges..."
+    if [ -f /var/www/html/recalculate.php ]; then
+        php -f /var/www/html/recalculate.php > /tmp/recalculate.log 2>&1
+        echo "    (Done. Log in /tmp/recalculate.log)"
+    else
+        echo "⚠️  WARNING: recalculate.php not found. Skipping."
+    fi
 else
-    echo "⚠️  WARNING: recalculate.php not found. Skipping."
+    echo " -> FORCE_RECALCULATE not set. Skipping privilege regeneration (Preserving existing files)."
 fi
 
 # 3. DEBUG MODE
