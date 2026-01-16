@@ -109,6 +109,22 @@ fi
 echo "Fixing permissions..."
 chown -R www-data:www-data /var/www/html
 
+# 4. CUSTOM INIT SCRIPTS (Hooks)
+# ---------------------------------------------------------------------------
+# exec /docker-entrypoint-init.d/*.sh if they exist
+if [ -d /docker-entrypoint-init.d ]; then
+    echo "Looking for custom init scripts in /docker-entrypoint-init.d/..."
+    for f in /docker-entrypoint-init.d/*.sh; do
+        if [ -f "$f" ]; then
+            echo "Running init script: $f"
+            # Ensure it is executable
+            chmod +x "$f"
+            # Run it
+            /bin/bash "$f" || echo "WARNING: Script $f returned error via exit code."
+        fi
+    done
+fi
+
 # 3. Start Apache
 echo "Starting Apache..."
 exec apache2-foreground
