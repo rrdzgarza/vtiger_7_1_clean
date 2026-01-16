@@ -31,6 +31,15 @@ if [ ! -z "$DB_PASSWORD" ]; then sed -i "s|\$dbconfig\['db_password'\] = .*;|\$d
 if [ ! -z "$DB_NAME" ];     then sed -i "s|\$dbconfig\['db_name'\] = .*;|\$dbconfig['db_name'] = '${DB_NAME}';|g" "$CONFIG_FILE"; fi
 if [ ! -z "$DB_PORT" ];     then sed -i "s|\$dbconfig\['db_port'\] = .*;|\$dbconfig['db_port'] = '${DB_PORT}';|g" "$CONFIG_FILE"; fi
 
+# FIX: Ensure DB SSL is disabled by default, but allow override via DB_SSL env var.
+if [ "$DB_SSL" = "true" ]; then
+    echo " -> Enabling DB SSL (DB_SSL=true)..."
+    sed -i "s|\$dbconfigoption\['ssl'\] = .*;|\$dbconfigoption['ssl'] = true;|g" "$CONFIG_FILE"
+else
+    # Default: False (Docker internal network usually doesn't use SSL)
+    sed -i "s|\$dbconfigoption\['ssl'\] = .*;|\$dbconfigoption['ssl'] = false;|g" "$CONFIG_FILE"
+fi
+
 # 2. SITE URL & ROOT DIRECTORY
 echo " -> Updating Site URL & Root Directory..."
 if [ ! -z "$SITE_URL" ]; then

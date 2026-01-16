@@ -11,17 +11,24 @@ echo " 3. Debug Mode (ENABLE_DEBUG)"
 echo "---------------------------------------------------"
 
 # 1. WEBUI.PHP PATCHES
-WEBUI_FILE="/var/www/html/includes/main/WebUI.php"
-if [ -f "$WEBUI_FILE" ]; then
-    echo " -> Patching WebUI.php..."
-    
-    # Disable strict host validation (conflicts with Traefik/Docker internal IPs)
-    sed -i 's/if.*CSRF.*validate.*/if (false) { \/\/ BYPASS CSRF CHECK FOR DOCKER/g' "$WEBUI_FILE"
-    
-    # Disable HTTPS redirect check to prevent loops (Traefik handles SSL, not Vtiger)
-    sed -i 's/if.*$site_URL.*&&.*stripos.*$request_URL.*$site_URL.*/\/\/ &/' "$WEBUI_FILE"
-    sed -i 's/header("Location: $site_URL",TRUE,301);/\/\/ &/' "$WEBUI_FILE"
-    sed -i '/header("Location: \$site_URL",TRUE,301);/{n;s/exit;/\/\/ exit;/}' "$WEBUI_FILE"
+# 1. WEBUI.PHP PATCHES / REPLACEMENT
+TARGET_WEBUI="/var/www/html/includes/main/WebUI.php"
+SOURCE_WEBUI="/docker-entrypoint-init.d/WebUI.php"
+
+if [ -f "$SOURCE_WEBUI" ]; then
+    echo " -> REPLACING WebUI.php with custom version from init.d..."
+    cp "$SOURCE_WEBUI" "$TARGET_WEBUI"
+    chown www-data:www-data "$TARGET_WEBUI"
+else
+    echo " -> Custom WebUI.php not found in init.d. Applying fallback patches..."
+    if [ -f "$TARGET_WEBUI" ]; then
+        # fallback: patch existing file if no custom replacement provided
+        sed -i 's/if.*CSRF.*validate.*/if (false) { \/\/ BYPASS CSRF CHECK FOR DOCKER/g' "$TARGET_WEBUI"
+        
+        sed -i 's/if.*$site_URL.*&&.*stripos.*$request_URL.*$site_URL.*/\/\/ &/' "$TARGET_WEBUI"
+        sed -i 's/header("Location: $site_URL",TRUE,301);/\/\/ &/' "$TARGET_WEBUI"
+        sed -i '/header("Location: \$site_URL",TRUE,301);/{n;s/exit;/\/\/ exit;/}' "$TARGET_WEBUI"
+    fi
 fi
 
 # 2. RECALCULATE PRIVILEGES
