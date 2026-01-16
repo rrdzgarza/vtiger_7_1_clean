@@ -1,4 +1,7 @@
 <?php
+die("Debug tool disabled for security.");
+// Uncomment the line above to re-enable during maintenance.
+
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
