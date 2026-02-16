@@ -10,8 +10,8 @@ Ejecuta este comando desde una máquina con acceso a la base de datos origen.
 ```bash
 # Comando usado para el backup (ajusta IP y credenciales)
 mysqldump -h 130.211.204.194 -u root -p \
-  --routines --triggers --events --single-transaction --hex-blob \
-  --result-file=vtiger_20251130.sql vtiger
+  --routines --triggers --events --single-transaction --hex-blob --set-gtid-purged=OFF \
+  --result-file=vtiger_20260215.sql vtiger
 ```
 
 ### 1.2. Restauración en Dokploy (MySQL 5.7 Project)
@@ -36,9 +36,10 @@ Este proceso se realiza **directamente en el VPS** donde instalaste Dokploy.
     ```bash
     # Sintaxis: sudo docker exec -i [CONTAINER_ID] mysql -u [USER] -p[PASSWORD] [DB_NAME] < [ARCHIVO_HOST]
     
-    sudo docker exec -i 50605d0a1af1 mysql -u root -pKerakae1 vtiger < /tmp/vtiger_20251130.sql
+    sudo docker exec -i f1dc88ad6660 mysql -u root -pKerakae1 vtiger < /tmp/vtiger_20260215.sql
     ```
-
+    sudo docker exec -i 8fb8d07a39c0 mariadb -u root -pKerakae1 vtiger < /tmp/vtiger_20260215.sql
+    
 ---
 
 ## 2. Configuración del Servicio Vtiger en Dokploy

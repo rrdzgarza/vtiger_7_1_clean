@@ -1,6 +1,12 @@
 #!/bin/bash
-CONTAINER="vtiger_crm"
+
+CONTAINER="$1"
 BACKUP="/home/administrator/vtiger_backup/vtiger"
+
+if [ -z "$CONTAINER" ]; then
+  echo "Uso: $0 <nombre_contenedor>"
+  exit 1
+fi
 
 
 # 1. COPIA TOTAL (El Cuerpo y el Cerebro)

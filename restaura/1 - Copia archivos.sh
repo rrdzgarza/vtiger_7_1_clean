@@ -1,14 +1,21 @@
 #!/bin/bash
-CONTAINER="vtiger_crm"
+
+CONTAINER="$1"
 BACKUP="/home/administrator/vtiger_backup/vtiger"
 
+if [ -z "$CONTAINER" ]; then
+  echo "Uso: $0 <nombre_contenedor>"
+  exit 1
+fi
 
-# 1. COPIA TOTAL (El Cuerpo y el Cerebro)
-# Como el contenedor está vacío, necesitamos TODO el código de Vtiger (index.php, librerías, etc.)
+echo "Restaurando en contenedor: $CONTAINER"
+
+# 1. Copia total
 echo "Copiando TODO el sitio desde $BACKUP..."
-# Usamos /. para copiar el contenido del directorio, no el directorio en sí
 sudo docker cp "$BACKUP/." "$CONTAINER:/var/www/html/"
 
-# 2. TRIGGER PERMISOS (Reinicia para ejecutar entrypoint hooks)
-echo "Reiniciando contenedor para aplicar permisos (entrypoint hook)..."
+# 2. Reinicio para permisos
+echo "Reiniciando contenedor..."
 sudo docker restart "$CONTAINER"
+
+echo "Restore completo ✅"
