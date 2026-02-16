@@ -62,10 +62,10 @@ COPY test_debug.php /usr/src/vtiger-tools/
 COPY debug_module.php /usr/src/vtiger-tools/
 
 # 9. Entrypoint
-COPY docker-entrypoint.sh /usr/local/bin/
+COPY ./docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
-COPY docker-entrypoint-init.d /docker-entrypoint-init.d
-COPY WebUI.php /docker-entrypoint-init.d/
+COPY ./docker-entrypoint-init.d /docker-entrypoint-init.d
+COPY ./WebUI.php /docker-entrypoint-init.d/
 RUN chmod +x /docker-entrypoint-init.d/*.sh
 
 ENTRYPOINT ["docker-entrypoint.sh"]
