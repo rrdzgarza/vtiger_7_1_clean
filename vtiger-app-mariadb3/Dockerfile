@@ -1,4 +1,4 @@
-FROM php:7.4-apache
+FROM php:8.1-apache
 
 # 1. Install dependencies
 # Eliminamos el FIX de Buster porque 7.4-apache usa Bullseye por defecto

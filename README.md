@@ -36,7 +36,7 @@ Este proceso se realiza **directamente en el VPS** donde instalaste Dokploy.
     ```bash
     # Sintaxis: sudo docker exec -i [CONTAINER_ID] mysql -u [USER] -p[PASSWORD] [DB_NAME] < [ARCHIVO_HOST]
     
-    sudo docker exec -i da8c61420798 mariadb -u root -pKerakae1 vtiger < /tmp/vtiger_20260215.sql
+    sudo docker exec -i 2d57e5bcd325 mariadb -u root -pKerakae1 vtiger < /tmp/vtiger_20260215.sql
     ```
     sudo docker exec -i 240f5039b6b2 mariadb -u root -pKerakae1 vtiger < /tmp/vtiger_20260215.sql
     ```
