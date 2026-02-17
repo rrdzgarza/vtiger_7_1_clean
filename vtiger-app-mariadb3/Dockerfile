@@ -1,8 +1,6 @@
-FROM php:8.2-apache
+FROM php:8.1-apache
 
-# --------------------------------------------------
-# 1. System dependencies
-# --------------------------------------------------
+# 1. Install dependencies
 RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg62-turbo-dev \
@@ -20,9 +18,7 @@ RUN apt-get update && apt-get install -y \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# --------------------------------------------------
-# 2. PHP extensions
-# --------------------------------------------------
+# 2. Configure and install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-configure imap --with-kerberos --with-imap-ssl \
     && docker-php-ext-install -j$(nproc) \
@@ -38,14 +34,10 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     intl \
     opcache
 
-# --------------------------------------------------
-# 3. Apache modules
-# --------------------------------------------------
+# 3. Enable Apache Rewrite
 RUN a2enmod rewrite headers expires
 
-# --------------------------------------------------
-# 4. PHP configuration
-# --------------------------------------------------
+# 4. PHP Configuration
 RUN echo "date.timezone = America/Monterrey" > /usr/local/etc/php/conf.d/vtiger.ini \
     && echo "memory_limit = 512M" >> /usr/local/etc/php/conf.d/vtiger.ini \
     && echo "upload_max_filesize = 64M" >> /usr/local/etc/php/conf.d/vtiger.ini \
@@ -57,15 +49,10 @@ RUN echo "date.timezone = America/Monterrey" > /usr/local/etc/php/conf.d/vtiger.
     && echo "opcache.enable=1" >> /usr/local/etc/php/conf.d/vtiger.ini \
     && echo "opcache.memory_consumption=128" >> /usr/local/etc/php/conf.d/vtiger.ini
 
-# --------------------------------------------------
 # 5. System Timezone
-# --------------------------------------------------
-RUN ln -snf /usr/share/zoneinfo/America/Monterrey /etc/localtime \
-    && echo America/Monterrey > /etc/timezone
+RUN ln -snf /usr/share/zoneinfo/America/Monterrey /etc/localtime && echo America/Monterrey > /etc/timezone
 
-# --------------------------------------------------
 # 6. Apache Configuration
-# --------------------------------------------------
 RUN echo '<Directory /var/www/html/>\n\
     Options +FollowSymlinks\n\
     AllowOverride All\n\
