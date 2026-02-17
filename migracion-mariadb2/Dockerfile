@@ -1,12 +1,16 @@
-FROM php:7.4-apache
+FROM php:7.2-apache
 
-# 1. Install dependencies
-# Eliminamos el FIX de Buster porque 7.4-apache usa Bullseye por defecto
-RUN apt-get update && apt-get install -y \
+# 1. Install dependencies for extensions
+# FIX: Debian Buster is EOL, so we must use archive repositories
+RUN echo "deb http://archive.debian.org/debian buster main" > /etc/apt/sources.list \
+    && echo "deb http://archive.debian.org/debian-security buster/updates main" >> /etc/apt/sources.list \
+    && apt-get --allow-releaseinfo-change update \
+    && apt-get install -y \
     libpng-dev \
     libjpeg-dev \
     libxml2-dev \
     libzip-dev \
+    libfreetype6-dev \
     libfreetype6-dev \
     libc-client-dev \
     libkrb5-dev \
@@ -19,27 +23,15 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # 2. Configure and install PHP extensions
-# NOTA: En PHP 7.4+ los flags de GD cambiaron:
-# --with-freetype-dir pasa a --with-freetype
-# --with-jpeg-dir pasa a --with-jpeg
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+RUN docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
     && docker-php-ext-configure imap --with-kerberos --with-imap-ssl \
-    && docker-php-ext-install -j$(nproc) \
-    gd \
-    mysqli \
-    pdo_mysql \
-    soap \
-    zip \
-    imap \
-    bcmath \
-    exif \
-    gmp \
-    intl
+    && docker-php-ext-install -j$(nproc) gd mysqli pdo_mysql soap zip imap mbstring curl xml json gmp intl
 
 # 3. Enable Apache Rewrite
 RUN a2enmod rewrite
 
-# 4. PHP Configuration
+# 4. PHP Configuration (Mimicking user's manual settings)
+# 4. PHP Configuration (Mimicking user's manual settings)
 RUN echo "date.timezone = America/Monterrey" > /usr/local/etc/php/conf.d/vtiger.ini \
     && echo "memory_limit = 512M" >> /usr/local/etc/php/conf.d/vtiger.ini \
     && echo "upload_max_filesize = 64M" >> /usr/local/etc/php/conf.d/vtiger.ini \
@@ -47,10 +39,10 @@ RUN echo "date.timezone = America/Monterrey" > /usr/local/etc/php/conf.d/vtiger.
     && echo "log_errors = Off" >> /usr/local/etc/php/conf.d/vtiger.ini \
     && echo "short_open_tag = Off" >> /usr/local/etc/php/conf.d/vtiger.ini
 
-# 5. System Timezone
-RUN ln -snf /usr/share/zoneinfo/America/Monterrey /etc/localtime && echo America/Monterrey > /etc/timezone
+# 5. System Timezone (Fix for logs and cron)
+RUN rm /etc/localtime && ln -s /usr/share/zoneinfo/America/Monterrey /etc/localtime
 
-# 6. Apache Configuration
+# 6. Apache Configuration (AllowOverride All for .htaccess)
 RUN echo '<Directory /var/www/html/>\n\
     Options +FollowSymlinks\n\
     AllowOverride All\n\
@@ -58,9 +50,12 @@ RUN echo '<Directory /var/www/html/>\n\
     </Directory>' > /etc/apache2/conf-available/vtiger.conf \
     && a2enconf vtiger
 
+# 7. Workdir
 WORKDIR /var/www/html
 
-# 8. Copy Maintenance Tools
+# 8. Copy Maintenance Tools (to a safe location first)
+# We copy them to /usr/src/vtiger-tools so the entrypoint can restore them
+# even if /var/www/html is overwritten by a volume or manual copy
 RUN mkdir -p /usr/src/vtiger-tools
 COPY recalculate.php /usr/src/vtiger-tools/
 COPY test_debug.php /usr/src/vtiger-tools/
