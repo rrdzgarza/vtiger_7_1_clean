@@ -1,4 +1,4 @@
-FROM php:8.1-apache
+FROM php:8.1-apache-bullseye
 
 # 1. Install dependencies
 RUN apt-get update && apt-get install -y \
@@ -15,7 +15,6 @@ RUN apt-get update && apt-get install -y \
     nano \
     vim \
     unzip \
-    git \
     && rm -rf /var/lib/apt/lists/*
 
 # 2. Configure and install PHP extensions
@@ -31,23 +30,18 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     bcmath \
     exif \
     gmp \
-    intl \
-    opcache
+    intl
 
 # 3. Enable Apache Rewrite
-RUN a2enmod rewrite headers expires
+RUN a2enmod rewrite
 
 # 4. PHP Configuration
 RUN echo "date.timezone = America/Monterrey" > /usr/local/etc/php/conf.d/vtiger.ini \
     && echo "memory_limit = 512M" >> /usr/local/etc/php/conf.d/vtiger.ini \
     && echo "upload_max_filesize = 64M" >> /usr/local/etc/php/conf.d/vtiger.ini \
-    && echo "post_max_size = 64M" >> /usr/local/etc/php/conf.d/vtiger.ini \
-    && echo "max_execution_time = 300" >> /usr/local/etc/php/conf.d/vtiger.ini \
-    && echo "display_errors = Off" >> /usr/local/etc/php/conf.d/vtiger.ini \
-    && echo "log_errors = On" >> /usr/local/etc/php/conf.d/vtiger.ini \
-    && echo "short_open_tag = Off" >> /usr/local/etc/php/conf.d/vtiger.ini \
-    && echo "opcache.enable=1" >> /usr/local/etc/php/conf.d/vtiger.ini \
-    && echo "opcache.memory_consumption=128" >> /usr/local/etc/php/conf.d/vtiger.ini
+    && echo "display_errors = On" >> /usr/local/etc/php/conf.d/vtiger.ini \
+    && echo "log_errors = Off" >> /usr/local/etc/php/conf.d/vtiger.ini \
+    && echo "short_open_tag = Off" >> /usr/local/etc/php/conf.d/vtiger.ini
 
 # 5. System Timezone
 RUN ln -snf /usr/share/zoneinfo/America/Monterrey /etc/localtime && echo America/Monterrey > /etc/timezone
