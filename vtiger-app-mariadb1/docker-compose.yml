@@ -1,20 +1,20 @@
 services:
   vtiger:
     build: .
-    container_name: vtiger_crm3
+    container_name: vtiger_mariadb1
     restart: always
     env_file:
       - .env
     volumes:
       # Data Persistence is CRITICAL for manual copy strategy
       # Files copied via 'docker cp' or 'restaura.sh' must survive redeploys
-      - vtiger_data:/var/www/html
-      - vtiger_storage:/var/www/html/storage
-      - vtiger_logs:/var/log/apache2
+      - vtiger_mariadb1_data:/var/www/html
+      - vtiger_mariadb1_storage:/var/www/html/storage
+      - vtiger_mariadb1_logs:/var/log/apache2
     networks:
       - default
 
 volumes:
-  vtiger_data:
-  vtiger_storage:
-  vtiger_logs:
+  vtiger_mariadb1_data:
+  vtiger_mariadb1_storage:
+  vtiger_mariadb1_logs:

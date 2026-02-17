@@ -8,13 +8,13 @@ services:
     volumes:
       # Data Persistence is CRITICAL for manual copy strategy
       # Files copied via 'docker cp' or 'restaura.sh' must survive redeploys
-      - vtiger_mariadb_data:/var/www/html
-      - vtiger_mariadb_storage:/var/www/html/storage
-      - vtiger_mariadb_logs:/var/log/apache2
+      - vtiger_mariadb3_data:/var/www/html
+      - vtiger_mariadb3_storage:/var/www/html/storage
+      - vtiger_mariadb3_logs:/var/log/apache2
     networks:
       - default
 
 volumes:
-  vtiger_mariadb_data:
-  vtiger_mariadb_storage:
-  vtiger_mariadb_logs:
+  vtiger_mariadb3_data:
+  vtiger_mariadb3_storage:
+  vtiger_mariadb3_logs:
