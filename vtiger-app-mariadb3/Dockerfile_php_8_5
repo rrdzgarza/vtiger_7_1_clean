@@ -5,15 +5,15 @@ FROM php:8.5-apache
 # --------------------------------------------------
 RUN apt-get update && apt-get install -y \
     libpng-dev \
-    libjpeg-dev \
+    libjpeg62-turbo-dev \
     libxml2-dev \
     libzip-dev \
     libfreetype6-dev \
-    libc-client-dev \
     libkrb5-dev \
     libcurl4-openssl-dev \
     libgmp-dev \
     libicu-dev \
+    libc-client2007e-dev \
     nano \
     vim \
     unzip \
