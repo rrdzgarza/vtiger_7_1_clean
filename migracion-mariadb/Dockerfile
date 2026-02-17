@@ -1,4 +1,4 @@
-FROM php:7.4-apache
+FROM php:7.2-apache
 
 # 1. Install dependencies for extensions
 # FIX: Debian Buster is EOL, so we must use archive repositories
