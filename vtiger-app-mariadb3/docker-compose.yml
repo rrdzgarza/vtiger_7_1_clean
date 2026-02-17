@@ -1,7 +1,7 @@
 services:
   vtiger:
     build: .
-    container_name: vtiger_mariadb
+    container_name: vtiger_mariadb3
     restart: always
     env_file:
       - .env
