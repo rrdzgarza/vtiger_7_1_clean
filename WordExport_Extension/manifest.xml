@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<module>
+    <name>WordExport</name>
+    <label>Word Export</label>
+    <parent>Tools</parent>
+    <version>1.0</version>
+    <dependencies>
+        <vtiger_version>7.1.0</vtiger_version>
+        <vtiger_max_version>8.*</vtiger_max_version>
+    </dependencies>
+    <license>
+        <inline>MIT License</inline>
+    </license>
+    <type>extension</type>
+</module>

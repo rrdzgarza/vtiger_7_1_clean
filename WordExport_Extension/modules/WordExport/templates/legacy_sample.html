@@ -1,0 +1,64 @@
+<html>
+
+<head>
+    <title>Quote</title>
+    <style>
+        body {
+            font-family: sans-serif;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Quote: $quote_no$</h1>
+    <p>Subject: $subject$</p>
+    <p>Account: $account_id$</p>
+
+    <h3>Products</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Product Info</th>
+                <th>Qty</th>
+                <th>Price</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            #PRODUCTBLOC_START#
+            <tr>
+                <td>
+                    <b>$PRODUCTTITLE$</b><br>
+                    $PRODUCTS_PRODUCTCODE$
+                </td>
+                <td>$PRODUCTQUANTITY$</td>
+                <td>$PRODUCTLISTPRICE$</td>
+                <td>$PRODUCTSTOTALAFTERDISCOUNT$</td>
+            </tr>
+            #PRODUCTBLOC_END#
+        </tbody>
+    </table>
+
+    <p align="right">
+        Subtotal: $TOTALWITHOUTVAT$<br>
+        Tax: $VAT$<br>
+        <b>Grand Total: $TOTAL$</b>
+    </p>
+</body>
+
+</html>

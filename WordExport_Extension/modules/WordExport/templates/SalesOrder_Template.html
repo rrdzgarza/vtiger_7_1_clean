@@ -1,0 +1,509 @@
+<html>
+
+<head>
+    <title>Sales Order Template</title>
+    <style>
+        /* CSS from User Request - Consolidated */
+        @font-face {
+            font-family: SourceSansPro;
+            src: url(SourceSansPro-Regular.ttf);
+            font-family: Ubuntu;
+        }
+
+        .clearfix:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+
+        a {
+            color: #1B9BB8;
+            text-decoration: none;
+        }
+
+        body {
+            color: #555555;
+            background: #FFFFFF;
+            font-size: 14px;
+            font-family: SourceSansPro;
+        }
+
+        #header {
+            padding: 10px 0;
+            margin-bottom: 0px;
+            border-bottom: 1px solid #AAAAAA;
+        }
+
+        #logo {
+            float: left;
+            margin: 0px;
+            width: 250px;
+        }
+
+        #logo img {
+            height: 70px;
+        }
+
+        #company {
+            float: left;
+            text-align: left;
+            width: 350px;
+        }
+
+        #details {
+            margin-bottom: 5px;
+            padding-top: 5px;
+        }
+
+        #client {
+            padding-left: 6px;
+            border-left: 6px solid #1B9BB8;
+            float: left;
+            width: 420px;
+        }
+
+        #client2 {
+            padding-left: 6px;
+            border-left: 6px solid #BDB9B9;
+            ;
+            float: left;
+            width: 420px;
+        }
+
+        #client .to {
+            color: #939598;
+        }
+
+        #client2 .to {
+            color: black;
+        }
+
+        h2.name {
+            font-size: 1.4em;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        #invoice {
+            float: right;
+            text-align: right;
+        }
+
+        #invoice2 {
+            float: right;
+            text-align: right;
+        }
+
+        #invoice h1,
+        h1 {
+            float: right;
+            color: #1B9BB8;
+            font-size: 2em;
+            line-height: 2.2em;
+            font-weight: bold;
+            margin: 0px;
+            padding: 0px;
+        }
+
+        #invoice2 h1,
+        h1 {
+            float: right;
+            color: #1B9BB8;
+            font-size: 2em;
+            line-height: 2.2em;
+            font-weight: bold;
+            margin: 0px;
+            padding: 0px;
+        }
+
+        #invoice .info {
+            font-size: 0.8em;
+        }
+
+        #invoice2 .info {
+            font-size: 0.8em;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border-spacing: 0;
+            margin-bottom: 20px;
+        }
+
+        table th,
+        table td {
+            padding: 3px 3px;
+            background: #EEEEEE;
+            text-align: center;
+            border-bottom: 1px solid #FFFFFF;
+        }
+
+        table th {
+            white-space: nowrap;
+            font-weight: normal;
+        }
+
+        table td {
+            text-align: right;
+        }
+
+        table td h3 {
+            color: #1B9BB8;
+            font-size: 10px;
+            font-weight: normal;
+            margin: 0 0 0.2em 0;
+        }
+
+        table .no {
+            color: #FFFFFF;
+            font-size: 1.2em;
+            background: #1B9BB8;
+        }
+
+        table .desc {
+            text-align: left;
+        }
+
+        table .unit {
+            background: #DDDDDD;
+        }
+
+        table .qty {
+            text-align: center;
+        }
+
+        table .total {
+            background: #1B9BB8;
+            color: #FFFFFF;
+        }
+
+        table td.unit,
+        table td.qty,
+        table td.total {
+            font-size: 1 em;
+        }
+
+        table tbody tr:last-child td {
+            border: none;
+        }
+
+        table tfoot td {
+            padding: 10px;
+            font-size: 1.2em;
+            background: #FFFFFF;
+            border-bottom: none;
+            white-space: nowrap;
+            border-top: 1px solid #AAAAAA;
+        }
+
+        table tfoot .border-none-top {
+            border-top: none;
+        }
+
+        table tfoot .grand-total {
+            padding: 10px 7px;
+            color: #1B9BB8;
+            font-size: 1.3em;
+            border-top: 1px solid #1B9BB8;
+            font-weight: bold
+        }
+
+        table tfoot .border-none {
+            border: none;
+        }
+
+        #pdf_tag {
+            font-size: 1.1em;
+            margin: 30px 0px 15px 0px;
+            padding: 0px;
+        }
+
+        #condiciones {
+            font-size: 1.1em;
+            margin: 0px;
+            padding: 0px;
+        }
+
+        #notices {
+            padding-left: 6px;
+            border-left: 6px solid #1B9BB8;
+        }
+
+        #notices .notice {
+            font-size: 1.2em;
+        }
+
+        .footer,
+        .footer td {
+            background-color: #FFFFFF;
+            color: #939598;
+            border: none;
+            border-top: 1px solid #AAAAAA;
+            font-size: 0.9em;
+            padding: 10px 0;
+        }
+
+        .header,
+        .header td {
+            background-color: #FFFFFF;
+            border: none;
+            border-bottom: 1px solid #AAAAAA;
+            margin: 0px;
+            padding: 0px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- HEADER -->
+    <table border="0" cellpadding="0" cellspacing="0" class="header" width="100%">
+        <tbody>
+            <tr>
+                <td align="left" valign="top">$COMPANY_LOGO$</td>
+                <td align="right" nowrap="nowrap" valign="top">
+                    <p><strong style="text-align: -webkit-right; white-space: nowrap;"><span
+                                style="font-size: 12px;">Zona&nbsp;</span></strong><span
+                            style="text-align: -webkit-right; white-space: nowrap; font-family: Verdana; font-size: 10px;"><strong><span
+                                    style="font-size: 12px;">$R_ACCOUNTID_CF_852$</span></strong>&nbsp; &nbsp; &nbsp;
+                            &nbsp; &nbsp; <strong><span
+                                    style="font-size: 12px;">$USERS_FIRST_NAME$&nbsp;$USERS_LAST_NAME$</span></strong>&nbsp;
+                            &nbsp; &nbsp; &nbsp; &nbsp; <strong><span
+                                    style="font-size: 12px;">$R_POTENTIALID_CF_984$&nbsp; &nbsp; &nbsp; &nbsp;
+                                </span></strong></span><strong>$R_POTENTIALID_CF_890$</strong><span
+                            style="text-align: -webkit-right; white-space: nowrap; font-family: Verdana; font-size: 10px;"><strong><span
+                                    style="font-size: 12px;">&nbsp; &nbsp; &nbsp; &nbsp;
+                                    &nbsp;</span></strong></span><span
+                            style="color: rgb(0, 0, 0); font-family: Verdana; font-size: x-large; font-weight: bold;">$SALESORDER_SALESORDER_NO$</span>
+                    </p>
+                    <span style="font-family: Verdana; font-size: 10px;">&nbsp;&nbsp;</span><br />
+                    <span style="font-size:10px;">$SALESORDER_MODIFIEDTIME$.&nbsp; &nbsp; &nbsp;
+                        <strong>&nbsp;&nbsp;</strong></span><strong>$SALESORDER_SOSTATUS$&nbsp;&nbsp;</strong>$R_ACCOUNTID_INDUSTRY$
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- BODY -->
+    <div id="details">
+        <div id="client2">
+            <p style="color: rgb(0, 0, 0); font-family: Verdana; font-size: medium;"><span
+                    style="font-size:12px;"><strong>$R_ACCOUNTID_CF_956$</strong></span></p>
+            <span style="font-size:10px;"><span
+                    style="font-family: verdana, geneva, sans-serif;"><strong>RFC</strong>:&nbsp;</span>$R_ACCOUNTID_SICCODE$<br />
+                $SALESORDER_BILL_STREET$<br />
+                $R_ACCOUNTID_BILL_POBOX$</span><br />
+            <span style="font-size:10px;">$SALESORDER_BILL_CODE$ $SALESORDER_BILL_CITY$<br />
+                $SALESORDER_BILL_STATE$<br />
+                $SALESORDER_BILL_COUNTRY$<br />
+                $R_ACCOUNTID_PHONE$</span><br />
+            <br />
+            <strong style="font-size: 14px;">Datos de Facturaci&oacute;n:</strong><br />
+            <br style="font-size: 10px;" />
+            <span style="font-size: 10px;"><strong>Condici&oacute;n de pago:</strong> $SALESORDER_CF_932$
+                -&nbsp;$SALESORDER_CF_960$</span><br style="font-size: 10px;" />
+            <strong style="font-size: 10px;">M&eacute;todo de pago</strong><span style="font-size: 10px;">:
+                $SALESORDER_CF_934$&nbsp;</span><strong style="font-size: 10px;">Forma de pago</strong><span
+                style="font-size: 10px;">: $SALESORDER_CF_938$</span><br />
+            <strong style="font-size: 10px;">Uso de CFDI</strong><span style="font-size: 10px;">:
+                $SALESORDER_CF_940$</span><br style="font-size: 10px;" />
+            <span style="font-size:10px;"><strong>Nombre, Tel&eacute;fono y
+                    %R_ACCOUNTID_CF_856%</strong>:&nbsp;$R_ACCOUNTID_CF_856$ $R_ACCOUNTID_CF_1163$<br />
+                <br />
+                <span style="font-size:14px;"><strong>Contacto para Pago:</strong></span><br />
+                Nombre, Correo y Tel&eacute;fono:</span>&nbsp;<span style="font-size:10px;">$R_ACCOUNTID_CF_1161$<br />
+                Portal:&nbsp;$R_ACCOUNTID_CF_854$<br />
+                #Prov:&nbsp;$R_ACCOUNTID_CF_986$</span><br />
+            <br />
+            <strong><span style="font-size:10px;">%SALESORDER_CF_1179%:&nbsp;</span></strong><span
+                style="font-family: Verdana; font-size: 10px;"><strong>(</strong></span><strong><span
+                    style="font-size: 10px;">Nombre, Correo y Tel&eacute;fono)</span></strong><span
+                style="font-family: Verdana; font-size: 10px;"><strong>:</strong>&nbsp;</span><span
+                style="font-size: 10px;">$SALESORDER_CF_1179$</span>&nbsp;<br />
+            <strong><span style="font-size: 10px;">%R_POTENTIALID_CF_1159% (Nombre, Correo y
+                    Tel&eacute;fono)</span></strong><span style="font-size: 10px;"><span
+                    style="font-family: Verdana;"><strong>:&nbsp;</strong></span>$R_POTENTIALID_CF_1159$</span><br />
+            <br />
+            <br />
+            &nbsp;
+        </div>
+
+        <div id="invoice2">
+            <div class="info">
+                <p style="color: rgb(0, 0, 0); font-family: Verdana; font-size: medium;"><span
+                        style="font-size:10px;"><span
+                            style="font-weight: bold;">Cotizaci&oacute;n:&nbsp;</span>$R_QUOTEID_QUOTE_NO$</span><br />
+                    <span style="font-size:10px;">$USERS_EMAIL1$</span><br />
+                    <br />
+                    <span
+                        style="font-family: Verdana; font-size: 10px;">%SALESORDER_CF_948%:&nbsp;$SALESORDER_CF_948$</span><br />
+                    <strong style="font-size: 10px;">%SALESORDER_SHIP_STREET%</strong>
+                </p>
+
+                <p style="color: rgb(0, 0, 0); font-family: Verdana; font-size: medium;"><span
+                        style="font-size:10px;">$SALESORDER_ACCOUNT_ID$<br />
+                        $SALESORDER_SHIP_STREET$<br />
+                        $SALESORDER_SHIP_CODE$<br />
+                        $SALESORDER_SHIP_CITY$<br />
+                        $SALESORDER_SHIP_STATE$<br />
+                        $SALESORDER_SHIP_COUNTRY$<br />
+                        <br />
+                        %SALESORDER_CF_946%&nbsp;:&nbsp;$SALESORDER_CF_946$&nbsp;$SALESORDER_CF_1055$</span><br />
+                    <br />
+                    <span style="font-size:10px;"><strong>O.C. Cliente:</strong>&nbsp;$SALESORDER_CF_988$ -
+                        $SALESORDER_CF_1000$<br />
+                        Recepci&oacute;n:&nbsp;$SALESORDER_CF_1002$<br />
+                        F. Entrega solicitada:&nbsp;$SALESORDER_CF_1059$</span><br />
+                    <br />
+                    <span style="font-size:10px;">Req. Instalaci&oacute;n:&nbsp;$SALESORDER_CF_1006$<br />
+                        F. Instalaci&oacute;n:&nbsp;$SALESORDER_CF_1010$</span><br style="font-size: 10px;" />
+                    <span style="font-size: 10px;">%SALESORDER_CF_930%:&nbsp;$SALESORDER_CF_930$</span><br />
+                    <br />
+                    <strong style="font-size: 10px;">R.%SALESORDER_CF_942%:&nbsp;</strong><span
+                        style="font-size: 10px;">$SALESORDER_CF_942$&nbsp;</span><strong
+                        style="font-size: 10px;">R.%SALESORDER_CF_944%:</strong><span
+                        style="font-size: 10px;">&nbsp;$SALESORDER_CF_944$</span>
+                </p>
+            </div>
+        </div>
+        <p></p>
+    </div>
+
+    <table border="0" color="black" style="font-size:10px;" width="100%">
+        <thead>
+            <tr>
+                <th style="text-align: center;color: white;font-weight: 600;background:#BDB9B9; width:5%"></th>
+                <th
+                    style="text-align: left;color: white;font-weight: 600;background:#BDB9B9;width:20%;border-right:2px solid white">
+                    <span style="font-size:10px;"><span style="font-family:verdana,geneva,sans-serif;"><span
+                                style="color:#000000;"><strong>Num Parte</strong></span></span></span></th>
+                <th
+                    style="text-align: left;color: white;font-weight: 600;background:#BDB9B9;width:45%;border-right:2px solid white">
+                    <span style="font-size:10px;"><span style="font-family:verdana,geneva,sans-serif;"><span
+                                style="color:#000000;"><strong>%G_Description%</strong></span></span></span></th>
+                <th
+                    style="text-align: center;color: white;font-weight: 600;background:#BDB9B9;width:15%;border-right:2px solid white">
+                    <span style="font-size:10px;"><span style="font-family:verdana,geneva,sans-serif;"><span
+                                style="color:#000000;"><strong>%G_List Price%</strong></span></span></span></th>
+                <th
+                    style="text-align: center;color: white;font-weight: 600;background:#BDB9B9;width:15%;border-right:2px solid white">
+                    <span style="font-size:10px;"><span style="font-family:verdana,geneva,sans-serif;"><span
+                                style="color:#000000;"><strong>%G_Quantity%</strong></span></span></span></th>
+                <th style="text-align: center;color: white;font-weight: 600;background:#BDB9B9;width:15%"><span
+                        style="font-size:10px;"><span style="font-family:verdana,geneva,sans-serif;"><span
+                                style="color:#000000;"><strong>%G_Total%</strong></span></span></span></th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- PRODUCT START -->
+            #PRODUCTBLOC_START#
+            <tr>
+                <td style="background:#BDB9B9;border-bottom:2px solid white"><span style="font-size:10px;"><span
+                            style="font-family:verdana,geneva,sans-serif;">$PRODUCTPOSITION$</span></span></td>
+                <td style="text-align:left; border-bottom:2px solid white;border-right:2px solid white;">
+                    <h3>$PRODUCTS_PRODUCTCODE$<span style="font-size:10px;"><span
+                                style="font-family:verdana,geneva,sans-serif;">&nbsp;</span></span></h3>
+                </td>
+                <td style="text-align:left; border-bottom:2px solid white;border-right:2px solid white;">
+                    <h3><span style="font-size:10px;"><span
+                                style="font-family:verdana,geneva,sans-serif;">$PRODUCTTITLE$&nbsp;
+                                &nbsp;&nbsp;</span></span></h3>
+                    <span style="font-size:10px;"><span
+                            style="font-family:verdana,geneva,sans-serif;">$PRODUCTEDITDESCRIPTION$</span></span>
+                </td>
+                <td style="border-right:2px solid white;border-bottom:2px solid white"><span
+                        style="font-size:10px;"><span style="font-family:verdana,geneva,sans-serif;">$PRODUCTLISTPRICE$
+                            $CURRENCYSYMBOL$</span></span></td>
+                <td style="border-right:2px solid white;border-bottom:2px solid white"><span
+                        style="font-size:10px;"><span
+                            style="font-family:verdana,geneva,sans-serif;">$PRODUCTQUANTITY$</span></span></td>
+                <td style="border-bottom:2px solid white"><span style="font-size:10px;"><span
+                            style="font-family:verdana,geneva,sans-serif;"><strong>$PRODUCTSTOTALAFTERDISCOUNT$
+                                $CURRENCYSYMBOL$</strong></span></span></td>
+            </tr>
+            #PRODUCTBLOC_END#
+            <!-- PRODUCT END -->
+
+            <tr>
+                <td colspan="5" style="background:white"></td>
+            </tr>
+            <tr>
+                <td colspan="4" style="background:white; border-bottom:1px solid #BDB9B9"><span
+                        style="font-size:10px;"><span
+                            style="font-family:verdana,geneva,sans-serif;">%G_Subtotal%</span></span></td>
+                <td style="background:#BDB9B9;"><span style="font-size:10px;"><span
+                            style="font-family:verdana,geneva,sans-serif;">$TOTALWITHOUTVAT$
+                            $CURRENCYSYMBOL$</span></span></td>
+            </tr>
+            <tr>
+                <td colspan="4" style="background:white; border-bottom:1px solid #BDB9B9"><span
+                        style="font-size:10px;"><span
+                            style="font-family:verdana,geneva,sans-serif;">%G_LBL_DISCOUNT%</span></span></td>
+                <td style="background:#BDB9B9;"><span style="font-size:10px;"><span
+                            style="font-family:verdana,geneva,sans-serif;">$TOTALDISCOUNT$
+                            $CURRENCYSYMBOL$</span></span></td>
+            </tr>
+            <tr>
+                <td colspan="4" style="background:white; border-bottom:1px solid #BDB9B9"><span
+                        style="font-size:10px;"><span
+                            style="font-family:verdana,geneva,sans-serif;">%G_Total%</span></span></td>
+                <td style="background:#BDB9B9;"><span style="font-size:10px;"><span
+                            style="font-family:verdana,geneva,sans-serif;">$TOTALAFTERDISCOUNT$
+                            $CURRENCYSYMBOL$</span></span></td>
+            </tr>
+            <tr>
+                <td colspan="4" style="background:white; border-bottom:2px solid #BDB9B9"><span
+                        style="font-size:10px;"><span style="font-family:verdana,geneva,sans-serif;">%G_Tax%
+                            $VATPERCENT$%</span></span><br />&nbsp;</td>
+                <td style="background:#BDB9B9;;border-bottom:2px solid #BDB9B9"><span style="font-size:10px;"><span
+                            style="font-family:verdana,geneva,sans-serif;">$VAT$ $CURRENCYSYMBOL$</span></span></td>
+            </tr>
+            <tr>
+                <td colspan="4" style="background:white;"><span style="font-size:10px;"><strong>&nbsp;&nbsp;&nbsp;&nbsp;
+                            %G_LBL_GRAND_TOTAL%.&nbsp; <span style="font-size:14px;">(</span></strong></span><span
+                        style="font-size:14px;">$CURRENCYNAME$)<strong>&nbsp;</strong></span></td>
+                <td style="background:white"><span style="font-size:10px;"><span
+                            style="font-family:verdana,geneva,sans-serif;"><strong>$TOTAL$
+                                $CURRENCYSYMBOL$</strong></span></span></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div id="details">
+        <div id="client2">%SALESORDER_CF_1175%: $SALESORDER_CF_1175$<br />
+            %SALESORDER_CF_1177%:&nbsp;$SALESORDER_CF_1177$<br />
+            $SALESORDER_DESCRIPTION$</div>
+
+        <div id="invoice"><br /><br /><br /><br /><span
+                style="font-family:verdana,geneva,sans-serif;">____________________________</span><br />
+            $R_USERS_FIRST_NAME$ $R_USERS_LAST_NAME$<br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <strong><span style="font-size:12px;"><span
+                        style="font-family: Verdana;">VEN-04-F/1</span></span></strong><br
+                style="font-family: Verdana; font-size: 10px;" />
+            &nbsp;
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <table border="0" cellpadding="0" cellspacing="0" class="footer" width="100%">
+        <tbody>
+            <tr>
+                <td align="center" valign="bottom"><span style="font-size:10px;">$COMPANY_NAME$ <small>&bull;
+                        </small>$COMPANY_ADDRESS$ <small>&bull; </small> $COMPANY_ZIP$<small>
+                        </small>$COMPANY_CITY$<small> &bull; </small>$COMPANY_STATE$</span></td>
+            </tr>
+        </tbody>
+    </table>
+
+</body>
+
+</html>

@@ -1,0 +1,406 @@
+<html>
+
+<head>
+    <title>Quote Template</title>
+    <style>
+        /* CSS from User Request - Consolidated */
+        @font-face {
+            font-family: SourceSansPro;
+            src: url(SourceSansPro-Regular.ttf);
+            font-family: Ubuntu;
+        }
+
+        .clearfix:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+
+        a {
+            color: #1B9BB8;
+            text-decoration: none;
+        }
+
+        body {
+            color: #555555;
+            background: #FFFFFF;
+            font-size: 14px;
+            font-family: SourceSansPro;
+        }
+
+        #header {
+            padding: 10px 0;
+            margin-bottom: 0px;
+            border-bottom: 1px solid #AAAAAA;
+        }
+
+        #logo {
+            float: left;
+            margin: 0px;
+            width: 250px;
+        }
+
+        #logo img {
+            height: 70px;
+        }
+
+        #company {
+            float: left;
+            text-align: left;
+            width: 350px;
+        }
+
+        #details {
+            margin-bottom: 15px;
+            padding-top: 30px;
+        }
+
+        #client {
+            padding-left: 6px;
+            border-left: 6px solid #1B9BB8;
+            float: left;
+            width: 420px;
+        }
+
+        #client2 {
+            padding-left: 6px;
+            border-left: 6px solid #BDB9B9;
+            ;
+            float: left;
+            width: 420px;
+        }
+
+        #client .to {
+            color: #939598;
+        }
+
+        #client2 .to {
+            color: black;
+        }
+
+        h2.name {
+            font-size: 1.4em;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        #invoice {
+            float: right;
+            text-align: right;
+        }
+
+        #invoice2 {
+            float: right;
+            text-align: right;
+        }
+
+        #invoice h1,
+        h1 {
+            float: right;
+            color: #1B9BB8;
+            font-size: 2em;
+            line-height: 2.2em;
+            font-weight: bold;
+            margin: 0px;
+            padding: 0px;
+        }
+
+        #invoice2 h1,
+        h1 {
+            float: right;
+            color: #1B9BB8;
+            font-size: 2em;
+            line-height: 2.2em;
+            font-weight: bold;
+            margin: 0px;
+            padding: 0px;
+        }
+
+        #invoice .info {
+            font-size: 0.8em;
+        }
+
+        #invoice2 .info {
+            font-size: 0.8em;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border-spacing: 0;
+            margin-bottom: 20px;
+        }
+
+        table th,
+        table td {
+            padding: 10px 10px;
+            background: #EEEEEE;
+            text-align: center;
+            border-bottom: 1px solid #FFFFFF;
+        }
+
+        table th {
+            white-space: nowrap;
+            font-weight: normal;
+        }
+
+        table td {
+            text-align: right;
+        }
+
+        table td h3 {
+            color: #1B9BB8;
+            font-size: 10px;
+            font-weight: normal;
+            margin: 0 0 0.2em 0;
+        }
+
+        table .no {
+            color: #FFFFFF;
+            font-size: 1.2em;
+            background: #1B9BB8;
+        }
+
+        table .desc {
+            text-align: left;
+        }
+
+        table .unit {
+            background: #DDDDDD;
+        }
+
+        table .qty {
+            text-align: center;
+        }
+
+        table .total {
+            background: #1B9BB8;
+            color: #FFFFFF;
+        }
+
+        table td.unit,
+        table td.qty,
+        table td.total {
+            font-size: 1 em;
+        }
+
+        table tbody tr:last-child td {
+            border: none;
+        }
+
+        table tfoot td {
+            padding: 10px;
+            font-size: 1.2em;
+            background: #FFFFFF;
+            border-bottom: none;
+            white-space: nowrap;
+            border-top: 1px solid #AAAAAA;
+        }
+
+        table tfoot .border-none-top {
+            border-top: none;
+        }
+
+        table tfoot .grand-total {
+            padding: 10px 7px;
+            color: #1B9BB8;
+            font-size: 1.3em;
+            border-top: 1px solid #1B9BB8;
+            font-weight: bold
+        }
+
+        table tfoot .border-none {
+            border: none;
+        }
+
+        #pdf_tag {
+            font-size: 1.1em;
+            margin: 30px 0px 15px 0px;
+        }
+
+        #notices {
+            padding-left: 6px;
+            border-left: 6px solid #1B9BB8;
+        }
+
+        #notices .notice {
+            font-size: 1.2em;
+        }
+
+        .footer,
+        .footer td {
+            background-color: #FFFFFF;
+            color: #939598;
+            border: none;
+            border-top: 1px solid #AAAAAA;
+            font-size: 0.9em;
+            margin-top: 200px;
+        }
+
+        .header,
+        .header td {
+            background-color: #FFFFFF;
+            border: none;
+            border-bottom: 1px solid #AAAAAA;
+            margin: 0px;
+            padding: 0px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- HEADER -->
+    <table border="0" cellpadding="0" cellspacing="0" class="header" width="100%">
+        <tbody>
+            <tr>
+                <td align="left" valign="top">$COMPANY_LOGO$</td>
+                <td align="right" nowrap="nowrap" valign="top">
+                    <h1><span
+                            style="color: rgb(0, 0, 0); font-family: Verdana; font-size: x-large; font-weight: bold;">%M_Quote
+                            No% $QUOTES_QUOTE_NO$ $QUOTES_CF_996$</span></h1>
+                    $QUOTES_MODIFIEDTIME$
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- BODY -->
+    <div id="details">
+        <div id="client2">
+            <p style="color: rgb(0, 0, 0); font-family: Verdana; font-size: medium;">
+                $R_CONTACTID_SALUTATIONTYPE$&nbsp;$R_CONTACTID_FIRSTNAME$&nbsp;$R_CONTACTID_LASTNAME$&nbsp;$R_CONTACTID_CF_982$
+            </p>
+            <span style="font-family: Verdana; font-weight: 700;">$QUOTES_ACCOUNT_ID$</span><br />
+            $QUOTES_SHIP_STREET$<br />
+            $QUOTES_SHIP_POBOX$<br />
+            $QUOTES_SHIP_CITY$<br />
+            $QUOTES_SHIP_STATE$<br />
+            CP&nbsp;$QUOTES_SHIP_CODE$<br />
+            $QUOTES_SHIP_COUNTRY$<br />
+            Estimado(a)&nbsp;<span style="font-family: Verdana;">$R_CONTACTID_SALUTATIONTYPE$
+                $R_CONTACTID_LASTNAME$</span>
+        </div>
+
+        <div id="invoice2">
+            <div class="info"></div>
+        </div>
+    </div>
+
+    <div id="pdf_tag">Por este conducto nos permitimos presentar a ustedes nuestra cotizaci&oacute;n para su equipo de
+        la marca&nbsp;$R_POTENTIALID_CF_984$.&nbsp;<br />
+        Somos distribuidor y representante oficial de&nbsp;<span
+            style="font-size: 17.6px;">$R_POTENTIALID_CF_984$</span> en M&eacute;xico.</div>
+
+    <table border="0" color="black" style="font-size:10px;" width="100%">
+        <thead>
+            <tr>
+                <th style="text-align: center;color: white;font-weight: 600;background:#BDB9B9; width:5%"></th>
+                <th
+                    style="text-align: left;color: white;font-weight: 600;background:#BDB9B9;width:14%;border-right:2px solid white">
+                    <span style="font-family:verdana,geneva,sans-serif;"><span style="color:#000000;"><strong>Num
+                                Parte</strong></span></span></th>
+                <th
+                    style="text-align: left;color: white;font-weight: 600;background:#BDB9B9;width:40%;border-right:2px solid white">
+                    <span style="font-family:verdana,geneva,sans-serif;"><span
+                            style="color:#000000;"><strong>%G_Description%</strong></span></span></th>
+                <th
+                    style="text-align: center;color: white;font-weight: 600;background:#BDB9B9;width:13%;border-right:2px solid white">
+                    <span style="font-family:verdana,geneva,sans-serif;"><span style="color:#000000;"><strong>%G_List
+                                Price%</strong></span></span></th>
+                <th
+                    style="text-align: center;color: white;font-weight: 600;background:#BDB9B9;width:10%;border-right:2px solid white">
+                    <span style="font-family:verdana,geneva,sans-serif;"><span
+                            style="color:#000000;"><strong>Cant</strong></span></span></th>
+                <th style="text-align: center;color: white;font-weight: 600;background:#BDB9B9;width:13%"><span
+                        style="font-family:verdana,geneva,sans-serif;"><span
+                            style="color:#000000;"><strong>%G_Total%</strong></span></span></th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- PRODUCT START -->
+            #PRODUCTBLOC_START#
+            <tr>
+                <td style="background:#BDB9B9;border-bottom:2px solid white"><span
+                        style="font-family:verdana,geneva,sans-serif;">$PRODUCTPOSITION$</span></td>
+                <td style="text-align:left; border-bottom:2px solid white;border-right:2px solid white;">
+                    $PRODUCTS_PRODUCTCODE$</td>
+                <td style="text-align:left; border-bottom:2px solid white;border-right:2px solid white;">
+                    <h3><span style="font-family:verdana,geneva,sans-serif;">$PRODUCTTITLE$&nbsp;</span></h3>
+                    <span style="font-family:verdana,geneva,sans-serif;">$PRODUCTEDITDESCRIPTION$</span>
+                </td>
+                <td style="border-right:2px solid white;border-bottom:2px solid white"><span
+                        style="font-family:verdana,geneva,sans-serif;">$PRODUCTLISTPRICE$ $CURRENCYSYMBOL$</span></td>
+                <td style="border-right:2px solid white;border-bottom:2px solid white"><span
+                        style="font-family:verdana,geneva,sans-serif;">$PRODUCTQUANTITY$</span></td>
+                <td style="border-bottom:2px solid white"><span
+                        style="font-family:verdana,geneva,sans-serif;"><strong>$PRODUCTSTOTALAFTERDISCOUNT$
+                            $CURRENCYSYMBOL$</strong></span></td>
+            </tr>
+            #PRODUCTBLOC_END#
+            <!-- PRODUCT END -->
+
+            <tr>
+                <td colspan="6" style="background:white"></td>
+            </tr>
+            <tr>
+                <td colspan="5" style="background:white; border-bottom:1px solid #BDB9B9"><span
+                        style="font-family: verdana, geneva, sans-serif; font-size: 10px; text-align: right; background-color: rgb(255, 255, 255);">%G_Subtotal%</span>
+                </td>
+                <td style="background:#BDB9B9;"><br /><span
+                        style="font-family:verdana,geneva,sans-serif;">$TOTALWITHOUTVAT$ $CURRENCYSYMBOL$</span></td>
+            </tr>
+            <tr>
+                <td colspan="5" style="background:white; border-bottom:1px solid #BDB9B9"><span
+                        style="font-size: 10px; text-align: right; background-color: rgb(255, 255, 255);">%G_LBL_DISCOUNT%</span>
+                </td>
+                <td style="background:#BDB9B9;"><br /><span
+                        style="font-family:verdana,geneva,sans-serif;">$TOTALDISCOUNT$ $CURRENCYSYMBOL$</span></td>
+            </tr>
+            <tr>
+                <td colspan="5" style="background:white; border-bottom:2px solid #BDB9B9"><span
+                        style="font-family:verdana,geneva,sans-serif;">%G_Tax% $VATPERCENT$%</span></td>
+                <td style="background:#BDB9B9;;border-bottom:2px solid #BDB9B9"><span
+                        style="font-family:verdana,geneva,sans-serif;">$VAT$ $CURRENCYSYMBOL$</span></td>
+            </tr>
+            <tr>
+                <td colspan="5" style="background:white;"><strong>&nbsp;&nbsp;&nbsp;&nbsp; %G_LBL_GRAND_TOTAL%&nbsp;
+                        (&nbsp;<span style="font-size:14px;">$CURRENCYNAME$</span></strong><strong> )</strong></td>
+                <td style="background:white"><span style="font-family:verdana,geneva,sans-serif;"><span
+                            style="font-size:12px;"><strong>$TOTAL$ $CURRENCYSYMBOL$</strong></span></span></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div id="details">
+        <div style="page-break-after: always;"><span style="display: none;">&nbsp;</span></div>
+        <span style="font-family:verdana,geneva,sans-serif;">$QUOTES_TERMS_CONDITIONS$</span><br />
+        &nbsp;
+    </div>
+
+    <!-- FOOTER -->
+    <table border="0" cellpadding="0" cellspacing="0" class="footer" width="100%">
+        <tbody>
+            <tr>
+                <td align="center" valign="bottom"><span style="font-size:8px;">Matriz<br />
+                        Violeta 226 Int 8<br />
+                        Col San Carlos Guadalajara<br />
+                        Jalisco, CP 44460<br />
+                        Tel: (33) 3650-3400, 3650-3659, 1306-0836</span></td>
+                <td align="center" valign="bottom"><span style="font-size:8px;">https://www.aasystems.com.mx<br />
+                        <br />
+                        <span style="font-size:10px;">mercadotecnia@aasystems.com.mx&nbsp;<br />
+                            <br />
+                            administracion@aasystems.com.mx</span></span></td>
+                <td align="center" valign="bottom"><span style="font-size:8px;">Sucursal<br />
+                        Motozintla #42<br />
+                        Col Letr&aacute;n Valle, Del. Benito Juarez<br />
+                        CDMX, CP 03650,<br />
+                        Tel: (55) 5615-6763, 1518-0139</span></td>
+            </tr>
+        </tbody>
+    </table>
+
+</body>
+
+</html>

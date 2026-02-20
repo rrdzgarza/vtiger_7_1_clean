@@ -1,5 +1,7 @@
 FROM php:7.2-apache
 
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # 1. Install dependencies for extensions
 # FIX: Debian Buster is EOL, so we must use archive repositories
 RUN echo "deb http://archive.debian.org/debian buster main" > /etc/apt/sources.list \

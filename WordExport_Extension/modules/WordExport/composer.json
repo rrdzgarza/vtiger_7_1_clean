@@ -1,0 +1,13 @@
+{
+    "name": "vtiger/word-export-module",
+    "description": "Word Export Extension for Vtiger CRM",
+    "require": {
+        "phpoffice/phpword": "^1.0",
+        "dompdf/dompdf": "^2.0"
+    },
+    "config": {
+        "platform": {
+            "php": "7.4"
+        }
+    }
+}
