@@ -114,15 +114,29 @@ class WordExport_Export_Action extends Vtiger_Action_Controller
                 }
             }
 
-            $finalFileName = $module . "_" . $recordModel->get('no') . "." . $ext;
-            if ($recordModel->get('quote_no'))
-                $finalFileName = "Quote_" . $recordModel->get('quote_no') . "." . $ext;
+            // Account name for filename
+            $acctName = '';
+            $acctId = $recordModel->get('account_id');
+            if ($acctId) {
+                try {
+                    $acctModel = Vtiger_Record_Model::getInstanceById($acctId, 'Accounts');
+                    $acctName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $acctModel->get('accountname') ?? '');
+                } catch (Exception $e) {}
+            }
+
+            $finalFileName = $module . '_' . $acctName . '.' . $ext;
+
+            if ($recordModel->get('quote_no')) {
+                $rev = $recordModel->get('cf_996');
+                $revPart = (!empty($rev)) ? '_' . $rev : '';
+                $finalFileName = $recordModel->get('quote_no') . $revPart . '_' . $acctName . '.' . $ext;
+            }
             if ($recordModel->get('salesorder_no'))
-                $finalFileName = "SalesOrder_" . $recordModel->get('salesorder_no') . "." . $ext;
+                $finalFileName = $recordModel->get('salesorder_no') . '_' . $acctName . '.' . $ext;
             if ($recordModel->get('invoice_no'))
-                $finalFileName = "Invoice_" . $recordModel->get('invoice_no') . "." . $ext;
+                $finalFileName = $recordModel->get('invoice_no') . '_' . $acctName . '.' . $ext;
             if ($recordModel->get('purchaseorder_no'))
-                $finalFileName = "PO_" . $recordModel->get('purchaseorder_no') . "." . $ext;
+                $finalFileName = $recordModel->get('purchaseorder_no') . '_' . $acctName . '.' . $ext;
 
             // Save to Documents if requested
             if ($saveToDocs) {
@@ -477,7 +491,48 @@ class WordExport_Export_Action extends Vtiger_Action_Controller
 
     private function saveToDocuments($recordModel, $filePath, $fileName)
     {
-        // Placeholder
+        $db = PearDatabase::getInstance();
+        $currentUser = Users_Record_Model::getCurrentUserModel();
+        $rootDir = rtrim(vglobal('root_directory'), '/');
+
+        // 1. Create Document record via Vtiger API
+        $docModel = Vtiger_Record_Model::getCleanInstance('Documents');
+        $docModel->set('notes_title', pathinfo($fileName, PATHINFO_FILENAME));
+        $docModel->set('filename', $fileName);
+        $docModel->set('filetype', mime_content_type($filePath));
+        $docModel->set('filesize', filesize($filePath));
+        $docModel->set('filelocationtype', 'I');
+        $docModel->set('filestatus', 1);
+        $docModel->set('filedownloadcount', 0);
+        $docModel->set('folderid', 1);
+        $docModel->set('assigned_user_id', $currentUser->getId());
+        $docModel->save();
+
+        $docId = $docModel->getId();
+        if (!$docId) return;
+
+        // 2. Create attachment crmentity
+        $attachId = $db->getUniqueID('vtiger_crmentity');
+        $userId = $currentUser->getId();
+        $db->pquery(
+            "INSERT INTO vtiger_crmentity (crmid, smcreatorid, smownerid, modifiedby, setype, description, createdtime, modifiedtime, presence, deleted) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW(), 1, 0)",
+            [$attachId, $userId, $userId, $userId, 'Documents Attachment', '']
+        );
+
+        // 3. Insert attachment record
+        $db->pquery(
+            "INSERT INTO vtiger_attachments (attachmentsid, name, description, type, path) VALUES (?, ?, ?, ?, ?)",
+            [$attachId, $fileName, '', mime_content_type($filePath), 'storage/']
+        );
+
+        // 4. Copy file to Vtiger storage
+        copy($filePath, $rootDir . '/storage/' . $attachId . '_' . $fileName);
+
+        // 5. Link attachment to document
+        $db->pquery("INSERT INTO vtiger_seattachmentsrel (crmid, attachmentsid) VALUES (?, ?)", [$docId, $attachId]);
+
+        // 6. Link document to source record (Quote, SalesOrder, etc.)
+        $db->pquery("INSERT INTO vtiger_senotesrel (crmid, notesid) VALUES (?, ?)", [$recordModel->getId(), $docId]);
     }
 
     private function getOrganizationDetails()

@@ -72,7 +72,7 @@ jQuery(document).ready(function($) {
 
     function getFormParams() {
         var form = $('#wordExportForm');
-        return {
+        var params = {
             module:        'WordExport',
             action:        'Export',
             record:        form.find('[name=record]').val(),
@@ -80,6 +80,10 @@ jQuery(document).ready(function($) {
             template:      form.find('[name=template]').val(),
             format:        'pdf'
         };
+        if (form.find('[name=save_to_docs]').is(':checked')) {
+            params.save_to_docs = '1';
+        }
+        return params;
     }
 
     // Descarga via iframe persistente en document.body
