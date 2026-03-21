@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <style type="text/css">
+        @page {
+            margin-top: 35mm;
+            margin-bottom: 25mm;
+            margin-left: 15mm;
+            margin-right: 15mm;
+        }
+        body {
+            font-family: sans-serif;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Hola Mundo - WordExport</h1>
+    <table width="180mm" border="1" cellpadding="5" cellspacing="0">
+        <tr><td width="50mm"><strong>Quote:</strong></td><td>$QUOTES_QUOTE_NO$</td></tr>
+        <tr><td><strong>Cuenta:</strong></td><td>$QUOTES_ACCOUNT_NAME$</td></tr>
+        <tr><td><strong>Contacto:</strong></td><td>$R_CONTACTID_FIRSTNAME$ $R_CONTACTID_LASTNAME$</td></tr>
+        <tr><td><strong>Total:</strong></td><td>$CURRENCYSYMBOL$ $TOTAL$</td></tr>
+    </table>
+    <p>Este PDF fue generado por WordExport.</p>
+</body>
+</html>

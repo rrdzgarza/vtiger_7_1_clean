@@ -1,4 +1,7 @@
 <?php
+// Always run from the directory where this script lives
+chdir(dirname(__FILE__));
+
 $zipFileName = 'WordExport.zip';
 if (file_exists($zipFileName)) {
     unlink($zipFileName);
@@ -14,17 +17,23 @@ $filesToZip = ['manifest.xml'];
 
 foreach ($directoriesToZip as $dir) {
     if (is_dir($dir)) {
-        $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir));
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS)
+        );
         foreach ($iterator as $file) {
             if ($file->isDir()) {
                 continue;
             }
             $filePath = $file->getPathname();
-            // Skip macOS hidden files
-            if (strpos($filePath, '.DS_Store') !== false || strpos($filePath, '__MACOSX') !== false) {
+            // Skip macOS hidden files and git files
+            if (strpos($filePath, '.DS_Store') !== false
+                || strpos($filePath, '__MACOSX') !== false
+                || strpos($filePath, '.git') !== false) {
                 continue;
             }
-            $zip->addFile($filePath, $filePath);
+            // Use ltrim to remove any leading ./ from the local name inside the zip
+            $localName = ltrim(str_replace('\\', '/', $filePath), './');
+            $zip->addFile($filePath, $localName);
         }
     }
 }

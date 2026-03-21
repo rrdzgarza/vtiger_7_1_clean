@@ -44,8 +44,6 @@ class WordExport_FileAction_Action extends Vtiger_Action_Controller
 
             // Sanitized Filename
             $cleanName = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', basename($file['name']));
-            // Avoid duplicates
-            $cleanName = time() . '_' . $cleanName;
 
             $targetDir = vglobal('root_directory') . 'modules/WordExport/templates/';
             $targetFile = $targetDir . $cleanName;

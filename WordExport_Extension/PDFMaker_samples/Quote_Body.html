@@ -2,17 +2,13 @@
 
 <head>
     <title></title>
-    <style type="text/css">
-        @page {
-            margin-top: 35mm;
-            margin-bottom: 25mm;
-            header: html_myHeader;
-            footer: html_myFooter;
-        }
+</head>
 
+<body>
+    <style type="text/css">
         @font-face {
             font-family: SourceSansPro;
-            /* src: url(SourceSansPro-Regular.ttf); - commented out to prevent load hang */
+            src: url(SourceSansPro-Regular.ttf);
             font-family: Ubuntu;
         }
 
@@ -27,11 +23,11 @@
             text-decoration: none;
         }
 
-        body {
+            {
             color: #555555;
             background: #FFFFFF;
             font-size: 14px;
-            font-family: SourceSansPro, sans-serif;
+            font-family: SourceSansPro;
         }
 
         #header {
@@ -58,7 +54,7 @@
 
         #details {
             margin-bottom: 15px;
-            padding-top: 10px;
+            padding-top: 30px;
         }
 
         #client {
@@ -132,71 +128,71 @@
             font-size: 0.8em;
         }
 
-        table.items {
+        table {
             width: 100%;
             border-collapse: collapse;
             border-spacing: 0;
             margin-bottom: 20px;
         }
 
-        table.items th,
-        table.items td {
+        table th,
+        table td {
             padding: 10px 10px;
             background: #EEEEEE;
             text-align: center;
             border-bottom: 1px solid #FFFFFF;
         }
 
-        table.items th {
+        table th {
             white-space: nowrap;
             font-weight: normal;
         }
 
-        table.items td {
+        table td {
             text-align: right;
         }
 
-        table.items td h3 {
+        table td h3 {
             color: #1B9BB8;
             font-size: 10px;
             font-weight: normal;
             margin: 0 0 0.2em 0;
         }
 
-        table.items .no {
+        table .no {
             color: #FFFFFF;
             font-size: 1.2em;
             background: #1B9BB8;
         }
 
-        table.items .desc {
+        table .desc {
             text-align: left;
         }
 
-        table.items .unit {
+        table .unit {
             background: #DDDDDD;
         }
 
-        table.items .qty {
+        table .qty {
             text-align: center;
         }
 
-        table.items .total {
+        table .total {
             background: #1B9BB8;
             color: #FFFFFF;
         }
 
-        table.items td.unit,
-        table.items td.qty,
-        table.items td.total {
+        table td.unit,
+        table td.qty,
+        table td.total {
             font-size: 1 em;
         }
 
-        table.items tbody tr:last-child td {
+        table tbody tr:last-child td {
             border: none;
         }
 
-        table.items tfoot td {
+        table tfoot td {
             padding: 10px;
             font-size: 1.2em;
             background: #FFFFFF;
@@ -205,11 +201,11 @@
             border-top: 1px solid #AAAAAA;
         }
 
-        table.items tfoot .border-none-top {
+        table tfoot .border-none-top {
             border-top: none;
         }
 
-        table.items tfoot .grand-total {
+        table tfoot .grand-total {
             padding: 10px 7px;
             color: #1B9BB8;
             font-size: 1.3em;
@@ -217,7 +213,7 @@
             font-weight: bold
         }
 
-        table.items tfoot .border-none {
+        table tfoot .border-none {
             border: none;
         }
 
@@ -242,6 +238,7 @@
             border: none;
             border-top: 1px solid #AAAAAA;
             font-size: 0.9em;
+            margin-top: 200px;
         }
 
         .header,
@@ -253,58 +250,13 @@
             padding: 0px;
         }
     </style>
-</head>
-
-<body>
-
-    <htmlpageheader name="myHeader" style="display:none">
-        <table border="0" cellpadding="0" cellspacing="0" class="header" width="100%">
-            <tbody>
-                <tr>
-                    <td align="left" valign="top">$COMPANY_LOGO$</td>
-                    <td align="right" nowrap="nowrap" valign="top">
-                        <h1><span
-                                style="color: rgb(0, 0, 0); font-family: Verdana; font-size: x-large; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: bold; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">%M_Quote
-                                No% $QUOTES_QUOTE_NO$ $QUOTES_CF_996$</span></h1>
-                        $QUOTES_MODIFIEDTIME$
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </htmlpageheader>
-
-
-    <htmlpagefooter name="myFooter" style="display:none">
-        <table border="0" cellpadding="0" cellspacing="0" class="footer" width="100%">
-            <tbody>
-                <tr>
-                    <td align="center" valign="bottom" width="33.33%"><span style="font-size:8px;">Matriz<br />
-                            Violeta 226 Int 8<br />
-                            Col San Carlos Guadalajara<br />
-                            Jalisco, CP 44460<br />
-                            Tel: (33) 3650-3400, 3650-3659, 1306-0836</span></td>
-                    <td align="center" valign="bottom" width="33.33%"><span style="font-size:8px;">https://www.aasystems.com.mx<br />
-                            <br />
-                            <span style="font-size:10px;">mercadotecnia@aasystems.com.mx&nbsp;<br />
-                                <br />
-                                administracion@aasystems.com.mx</span></span></td>
-                    <td align="center" valign="bottom" width="33.34%"><span style="font-size:8px;">Sucursal<br />
-                            Motozintla #42<br />
-                            Col Letr&aacute;n Valle, Del. Benito Juarez<br />
-                            CDMX, CP 03650,<br />
-                            Tel: (55) 5615-6763, 1518-0139</span></td>
-                </tr>
-            </tbody>
-        </table>
-    </htmlpagefooter>
-
     <div id="details">
         <div id="client2">
             <p
                 style="color: rgb(0, 0, 0); font-family: Verdana; font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-style: initial; text-decoration-color: initial;">
                 $R_CONTACTID_SALUTATIONTYPE$&nbsp;$R_CONTACTID_FIRSTNAME$&nbsp;$R_CONTACTID_LASTNAME$&nbsp;$R_CONTACTID_CF_982$
             </p>
-            <span style="font-family: Verdana; font-weight: 700;">$QUOTES_ACCOUNT_ID$</span><br />
+            <span style="font-family: Verdana; font-weight: 700;">$QUOTES_ACCOUNT_NAME$</span><br />
             $QUOTES_SHIP_STREET$<br />
             $QUOTES_SHIP_POBOX$<br />
             $QUOTES_SHIP_CITY$<br />
@@ -325,26 +277,30 @@
         Somos distribuidor y representante oficial de&nbsp;<span
             style="font-size: 17.6px;">$R_POTENTIALID_CF_984$</span> en M&eacute;xico.</div>
 
-    <table border="0" color="black" style="font-size:10px;" width="100%" class="items">
+    <table border="0" color="black" style="font-size:10px;" width="100%">
         <thead>
             <tr>
                 <th style="text-align: center;color: white;font-weight: 600;background:#BDB9B9; width:5%"></th>
                 <th
                     style="text-align: left;color: white;font-weight: 600;background:#BDB9B9;width:14%;border-right:2px solid white">
                     <span style="font-family:verdana,geneva,sans-serif;"><span style="color:#000000;"><strong>Num
-                                Parte</strong></span></span></th>
+                                Parte</strong></span></span>
+                </th>
                 <th
                     style="text-align: left;color: white;font-weight: 600;background:#BDB9B9;width:40%;border-right:2px solid white">
                     <span style="font-family:verdana,geneva,sans-serif;"><span
-                            style="color:#000000;"><strong>%G_Description%</strong></span></span></th>
+                            style="color:#000000;"><strong>%G_Description%</strong></span></span>
+                </th>
                 <th
                     style="text-align: center;color: white;font-weight: 600;background:#BDB9B9;width:13%;border-right:2px solid white">
                     <span style="font-family:verdana,geneva,sans-serif;"><span style="color:#000000;"><strong>%G_List
-                                Price%</strong></span></span></th>
+                                Price%</strong></span></span>
+                </th>
                 <th
                     style="text-align: center;color: white;font-weight: 600;background:#BDB9B9;width:10%;border-right:2px solid white">
                     <span style="font-family:verdana,geneva,sans-serif;"><span
-                            style="color:#000000;"><strong>Cant</strong></span></span></th>
+                            style="color:#000000;"><strong>Cant</strong></span></span>
+                </th>
                 <th style="text-align: center;color: white;font-weight: 600;background:#BDB9B9;width:13%"><span
                         style="font-family:verdana,geneva,sans-serif;"><span
                             style="color:#000000;"><strong>%G_Total%</strong></span></span></th>
@@ -409,11 +365,10 @@
     </table>
 
     <div id="details">
-        <!-- Removed the page break here because it generates an empty page in mPDF if placed right before end, or it breaks formatting. Only use if absolutely needed: page-break-after: always; -->
+        <div style="page-break-after: always;"><span style="display: none;">&nbsp;</span></div>
         <span style="font-family:verdana,geneva,sans-serif;">$QUOTES_TERMS_CONDITIONS$</span><br />
         &nbsp;
     </div>
-
 </body>
 
 </html>

@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Cotización - Estilo PDFMaker</title>
+    <style type="text/css">
+        @page {
+            /* NO usar size: letter — causa 1 carácter por página. Tamaño definido en constructor PHP */
+            margin-top: 35mm;
+            margin-bottom: 25mm;
+            margin-left: 15mm;
+            margin-right: 15mm;
+            header: html_myHeader;
+            footer: html_myFooter;
+        }
+
+        body {
+            color: #555555;
+            background: #FFFFFF;
+            font-size: 12px;
+            font-family: sans-serif;
+        }
+
+        a {
+            color: #7c8c95;
+            text-decoration: none;
+        }
+
+        h2.name {
+            font-size: 1.4em;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        table.items {
+            width: 180mm;
+            border-collapse: collapse;
+            border-spacing: 0;
+            margin-bottom: 20px;
+        }
+
+        table.items th,
+        table.items td {
+            padding: 10px 10px;
+            background: #EEEEEE;
+            text-align: center;
+            border-bottom: 1px solid #FFFFFF;
+        }
+
+        table.items th {
+            white-space: nowrap;
+            font-weight: normal;
+        }
+
+        table.items td {
+            text-align: right;
+        }
+
+        table.items td h3 {
+            color: #7c8c95;
+            font-size: 10px;
+            font-weight: normal;
+            margin: 0 0 0.2em 0;
+        }
+
+        table.items .no {
+            color: #FFFFFF;
+            font-size: 1.2em;
+            background: #7c8c95;
+        }
+
+        table.items .desc {
+            text-align: left;
+        }
+
+        table.items .unit {
+            background: #DDDDDD;
+        }
+
+        table.items .qty {
+            text-align: center;
+        }
+
+        table.items .total {
+            background: #7c8c95;
+            color: #FFFFFF;
+        }
+
+        table.items td.unit,
+        table.items td.qty,
+        table.items td.total {
+            font-size: 1em;
+        }
+
+        .header,
+        .header td {
+            background-color: #FFFFFF;
+            border: none;
+            border-bottom: 1px solid #AAAAAA;
+            margin: 0px;
+            padding: 0px;
+        }
+    </style>
+</head>
+
+<body>
+    <htmlpageheader name="myHeader" style="display:none">
+        <table border="0" cellpadding="0" cellspacing="0" class="header" width="180mm" style="margin: 0; padding: 0;">
+            <tr>
+                <td width="60mm" style="padding: 0 0 3px 0; margin: 0;">
+                    $IMG_Logo_AAS|30mm$
+                </td>
+                <td width="60mm" style="padding: 0; margin: 0; text-align: center;">
+                    <p style="margin: 0; padding: 0; font-size: 2em; color: #7c8c95;">%M_Quote No%</p>
+                </td>
+                <td width="60mm" style="padding: 0; margin: 0; text-align: right;">
+                    <p style="margin: 0; padding: 0; font-size: 2em; color: #333333;">$QUOTES_QUOTE_NO$
+                        $QUOTES_CF_996$</p>
+                    <p style="font-size: 0.8em; margin: 2px 0 0 0; padding: 0;">$QUOTES_MODIFIEDTIME$</p>
+                </td>
+            </tr>
+        </table>
+    </htmlpageheader>
+
+    <htmlpagefooter name="myFooter" style="display:none">
+        <table border="0" cellpadding="4" cellspacing="0" width="180mm"
+            style="margin: 0; padding: 0; border-collapse: collapse; border-top: 1px solid #AAAAAA;">
+            <tr>
+                <td width="60mm"
+                    style="padding: 4px 8px; text-align: center; vertical-align: bottom; font-size: 8px; border: none; margin: 0;">
+                    <strong>Matriz</strong><br />
+                    Violeta 226 Int 8<br />
+                    Col San Carlos Guadalajara<br />
+                    Jalisco, CP 44460<br />
+                    Tel: (33) 3650-3400, 3650-3659, 1306-0836
+                </td>
+                <td width="60mm"
+                    style="padding: 4px 8px; text-align: center; vertical-align: bottom; font-size: 8px; border: none; margin: 0;">
+                    <strong>https://www.aasystems.com.mx</strong><br />
+                    <br />
+                    <span style="font-size:10px;">mercadotecnia@aasystems.com.mx<br /><br />
+                        administracion@aasystems.com.mx</span>
+                </td>
+                <td width="60mm"
+                    style="padding: 4px 8px; text-align: center; vertical-align: bottom; font-size: 8px; border: none; margin: 0;">
+                    <strong>Sucursal</strong><br />
+                    Motozintla #42<br />
+                    Col Letr&aacute;n Valle, Del. Benito Juarez<br />
+                    CDMX, CP 03650,<br />
+                    Tel: (55) 5615-6763, 1518-0139
+                </td>
+            </tr>
+        </table>
+    </htmlpagefooter>
+
+    <!-- Datos cliente / empresa (tabla en lugar de floats) -->
+    <table width="180mm" border="0" cellpadding="0" cellspacing="0"
+        style="margin-bottom: 15px; padding-top: 5px; padding-bottom: 10px; border-bottom: 1px solid #7c8c95;">
+        <tr>
+            <td width="100mm" valign="top">
+                <p style="color: #000; font-family: Verdana; font-size: medium;">
+                    <strong>$R_CONTACTID_SALUTATIONTYPE$&nbsp;$R_CONTACTID_FIRSTNAME$&nbsp;$R_CONTACTID_LASTNAME$&nbsp;$R_CONTACTID_CF_982$</strong>
+                </p>
+                <span
+                    style="font-family: Verdana; font-weight: 700;"><strong>$QUOTES_ACCOUNT_NAME$</strong></span><br />
+                $QUOTES_SHIP_STREET$<br />
+                $QUOTES_SHIP_POBOX$<br />
+                $QUOTES_SHIP_CITY$, $QUOTES_SHIP_STATE$ CP $QUOTES_SHIP_CODE$<br />
+                $QUOTES_SHIP_COUNTRY$<br />
+            </td>
+            <td width="80mm" valign="top" style="text-align: right;">
+                <p style="font-size: 0.8em;"><strong>$COMPANY_NAME$</strong>
+                    <br />$COMPANY_ADDRESS$
+                    <br />$COMPANY_CITY$, $COMPANY_STATE$ CP $COMPANY_CODE$
+                    <br />$COMPANY_COUNTRY$
+                    <br />
+                    <br />RFC $COMPANY_VATID$
+                </p>
+            </td>
+        </tr>
+    </table>
+
+    <div style="font-size: 1.1em; margin: 10px 0 15px 0;">
+        <p>
+            Estimado(a)&nbsp;<span style="font-family: Verdana;"><strong>$R_CONTACTID_SALUTATIONTYPE$
+                    $R_CONTACTID_LASTNAME$,</strong></span>
+        </p>
+        <p>Por este conducto nos permitimos presentar a ustedes nuestra cotizaci&oacute;n para su equipo de
+            la marca&nbsp;$R_POTENTIALID_CF_984$.&nbsp;<br />
+            Somos distribuidor y representante oficial de&nbsp;<span
+                style="font-size: 17.6px;">$R_POTENTIALID_CF_984$</span> en M&eacute;xico.
+        </p>
+    </div>
+
+    <table border="0" class="items" width="180mm" style="font-size:10px;">
+        <thead>
+            <tr>
+                <th
+                    style="text-align: center; color: white; font-weight: 600; background:#7c8c95; width:9mm; padding: 8px;">
+                </th>
+                <th
+                    style="text-align: left; color: white; font-weight: 600; background:#7c8c95; width:25mm; padding: 8px; border-right:1px solid white;">
+                    <span style="font-family:verdana,geneva,sans-serif;"><strong>Num Parte</strong></span>
+                </th>
+                <th
+                    style="text-align: left; color: white; font-weight: 600; background:#7c8c95; width:72mm; padding: 8px; border-right:1px solid white;">
+                    <span style="font-family:verdana,geneva,sans-serif;"><strong>%G_Description%</strong></span>
+                </th>
+                <th
+                    style="text-align: center; color: white; font-weight: 600; background:#7c8c95; width:23mm; padding: 8px; border-right:1px solid white;">
+                    <span style="font-family:verdana,geneva,sans-serif;"><strong>%G_List Price%</strong></span>
+                </th>
+                <th
+                    style="text-align: center; color: white; font-weight: 600; background:#7c8c95; width:18mm; padding: 8px; border-right:1px solid white;">
+                    <span style="font-family:verdana,geneva,sans-serif;"><strong>Cant</strong></span>
+                </th>
+                <th
+                    style="text-align: center; color: white; font-weight: 600; background:#7c8c95; width:33mm; padding: 8px;">
+                    <span style="font-family:verdana,geneva,sans-serif;"><strong>%G_Total%</strong></span>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            #PRODUCTBLOC_START#
+            <tr>
+                <td style="background:#EEEEEE; border-bottom:1px solid white; padding: 8px; text-align: center;">
+                    <span style="font-family:verdana,geneva,sans-serif;">$PRODUCTPOSITION$</span>
+                </td>
+                <td
+                    style="text-align:left; border-bottom:1px solid white; border-right:1px solid white; padding: 8px; background: #FFFFFF;">
+                    <span style="font-family:verdana,geneva,sans-serif;">$PRODUCTS_PRODUCTCODE$</span>
+                </td>
+                <td
+                    style="text-align:left; border-bottom:1px solid white; border-right:1px solid white; padding: 8px; background: #FFFFFF;">
+                    <h3 style="margin: 0 0 4px 0; color: #7c8c95; font-size: 10px;"><span
+                            style="font-family:verdana,geneva,sans-serif;">$PRODUCTTITLE$</span></h3>
+                    <span style="font-family:verdana,geneva,sans-serif; font-size: 9px;">$PRODUCTEDITDESCRIPTION$</span>
+                </td>
+                <td
+                    style="border-right:1px solid white; border-bottom:1px solid white; padding: 8px; text-align: right; background: #FFFFFF;">
+                    <span style="font-family:verdana,geneva,sans-serif;">$CURRENCYSYMBOL$ $PRODUCTLISTPRICE$</span>
+                </td>
+                <td
+                    style="border-right:1px solid white; border-bottom:1px solid white; padding: 8px; text-align: center; background: #FFFFFF;">
+                    <span style="font-family:verdana,geneva,sans-serif;">$PRODUCTQUANTITY$</span>
+                </td>
+                <td style="border-bottom:1px solid white; padding: 8px; text-align: right; background: #FFFFFF;">
+                    <span style="font-family:verdana,geneva,sans-serif;"><strong>$CURRENCYSYMBOL$
+                            $PRODUCTSTOTALAFTERDISCOUNT$</strong></span>
+                </td>
+            </tr>
+            #PRODUCTBLOC_END#
+            <tr>
+                <td colspan="6" style="background:white; border: none; padding: 8px;"></td>
+            </tr>
+            <tr>
+                <td colspan="5"
+                    style="background:white; border-bottom:1px solid #EEEEEE; padding: 8px; text-align: right;">
+                    <span style="font-family: verdana, geneva, sans-serif; font-weight: bold;">%G_Subtotal%</span>
+                </td>
+                <td style="background:#EEEEEE; border-bottom:1px solid #EEEEEE; padding: 8px; text-align: right;">
+                    <span style="font-family:verdana,geneva,sans-serif;">$CURRENCYSYMBOL$ $TOTALWITHOUTVAT$</span>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="5"
+                    style="background:white; border-bottom:1px solid #EEEEEE; padding: 8px; text-align: right;">
+                    <span style="font-family: verdana, geneva, sans-serif; font-weight: bold;">%G_LBL_DISCOUNT%</span>
+                </td>
+                <td style="background:#EEEEEE; border-bottom:1px solid #EEEEEE; padding: 8px; text-align: right;">
+                    <span style="font-family:verdana,geneva,sans-serif;">$CURRENCYSYMBOL$ $TOTALDISCOUNT$</span>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="5"
+                    style="background:white; border-bottom:1px solid #EEEEEE; padding: 8px; text-align: right;">
+                    <span style="font-family:verdana,geneva,sans-serif; font-weight: bold;">%G_Tax% $VATPERCENT$%</span>
+                </td>
+                <td style="background:#EEEEEE; border-bottom:1px solid #EEEEEE; padding: 8px; text-align: right;">
+                    <span style="font-family:verdana,geneva,sans-serif;">$CURRENCYSYMBOL$ $VAT$</span>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="5" style="background:white; padding: 10px; text-align: right;">
+                    <strong
+                        style="font-family:verdana,geneva,sans-serif; font-size: 12px;">%G_LBL_GRAND_TOTAL%(&nbsp;<span
+                            style="font-size:14px;">$CURRENCYNAME$</span>&nbsp;)</strong>
+                </td>
+                <td style="background:white; padding: 10px; text-align: right;">
+                    <span style="font-family:verdana,geneva,sans-serif;"><span
+                            style="font-size:13px;"><strong>$CURRENCYSYMBOL$ $TOTAL$
+                            </strong></span></span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Términos y Condiciones en página separada -->
+    <div style="page-break-before: always;">
+        <span
+            style="font-family:verdana,geneva,sans-serif; font-size: 12px; white-space: pre-wrap; word-wrap: break-word; line-height: 1.6;">$QUOTES_TERMS_CONDITIONS$</span>
+    </div>
+
+</body>
+
+</html>

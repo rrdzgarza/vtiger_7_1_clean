@@ -7,8 +7,7 @@
  * Portions created by vtiger are Copyright (C) vtiger.
  * All Rights Reserved.
  *************************************************************************************/
-require_once 'vars.php';
-
+$moduleVendor = realpath(__DIR__ . '/../vendor/autoload.php');
 class WordExport_Export_Action extends Vtiger_Action_Controller
 {
 
@@ -19,119 +18,138 @@ class WordExport_Export_Action extends Vtiger_Action_Controller
 
     public function process(Vtiger_Request $request)
     {
-        $recordId = $request->get('record');
-        $module = $request->get('source_module'); // Quotes, SalesOrder, Invoice, PurchaseOrder
-        $templateName = $request->get('template');
-        $format = $request->get('format');
-        $saveToDocs = $request->get('save_to_docs');
+        set_time_limit(300);
+        ini_set('max_execution_time', 300);
 
-        if (empty($recordId) || empty($templateName)) {
-            echo "Missing record or template";
-            return;
-        }
+        try {
+            $recordId = $request->get('record');
+            $module = $request->get('source_module'); // Quotes, SalesOrder, Invoice, PurchaseOrder
+            $templateName = $request->get('template');
+            $format = $request->get('format');
+            $saveToDocs = $request->get('save_to_docs');
 
-        // 1. Load Dependencies
-        $moduleVendor = realpath(__DIR__ . '/../vendor/autoload.php');
-        $rootVendor = realpath(__DIR__ . '/../../../../vendor/autoload.php');
+            if (empty($recordId) || empty($templateName)) {
+                echo "Missing record or template";
+                return;
+            }
 
-        // It is crucial to load both if they exist, so we have access to local PhpWord AND global mPDF
-        if ($rootVendor && file_exists($rootVendor)) {
-            require_once $rootVendor;
-        }
-        if ($moduleVendor && file_exists($moduleVendor)) {
-            require_once $moduleVendor;
-        }
+            // 1. Load Dependencies
+            $moduleVendor = realpath(__DIR__ . '/../vendor/autoload.php');
+            $rootVendor = realpath(__DIR__ . '/../../../vendor/autoload.php');
 
-        if (!$rootVendor && !$moduleVendor) {
-            die("Composer dependencies not found. Please ensure vendors are installed.");
-        }
+            // It is crucial to load both if they exist, so we have access to local PhpWord AND global mPDF
+            if ($rootVendor && file_exists($rootVendor)) {
+                require_once $rootVendor;
+            }
+            if ($moduleVendor && file_exists($moduleVendor)) {
+                require_once $moduleVendor;
+            }
 
-        // 2. Load Record Data
-        $recordModel = Vtiger_Record_Model::getInstanceById($recordId, $module);
-        $data = $recordModel->getData();
+            if (!$rootVendor && !$moduleVendor) {
+                die("Composer dependencies not found. Please ensure vendors are installed.");
+            }
 
-        // 3. Prepare Template Path
-        $templatePath = __DIR__ . '/../templates/' . basename($templateName);
-        if (!file_exists($templatePath)) {
-            die("Template file not found: " . $templatePath);
-        }
+            // 2. Load Record Data
+            $recordModel = Vtiger_Record_Model::getInstanceById($recordId, $module);
+            $data = $recordModel->getData();
 
-        $ext = pathinfo($templateName, PATHINFO_EXTENSION);
-        $tempFileName = tempnam(sys_get_temp_dir(), 'WordExport');
+            // Release session lock so other requests are not blocked during PDF generation
+            session_write_close();
 
-        // ROUTING: Word vs HTML
-        if ($ext === 'docx') {
-            $this->processWordTemplate($templatePath, $data, $recordModel, $tempFileName);
+            // 3. Prepare Template Path
+            $templatePath = __DIR__ . '/../templates/' . basename($templateName);
+            if (!file_exists($templatePath)) {
+                die("Template file not found: " . $templatePath);
+            }
 
-            if ($format === 'pdf') {
+            $ext = pathinfo($templateName, PATHINFO_EXTENSION);
+            $tempFileName = tempnam(sys_get_temp_dir(), 'WordExport');
+
+            // ROUTING: Word vs HTML
+            if ($ext === 'docx') {
+                $this->processWordTemplate($templatePath, $data, $recordModel, $tempFileName);
+
+                if ($format === 'pdf') {
+                    try {
+                        $tempFileName = $this->convertWordToPdf($tempFileName);
+                        $ext = 'pdf';
+                        $contentType = 'application/pdf';
+                    } catch (Exception $e) {
+                        echo "Error generating PDF: " . $e->getMessage();
+                        return;
+                    }
+                } else {
+                    $ext = 'docx';
+                    $contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+                }
+
+            } elseif ($ext === 'html') {
+                // HTML Template (PDF Maker Style)
+                $htmlContent = file_get_contents($templatePath);
+                $processedHtml = $this->processHtmlTemplate($htmlContent, $recordModel, $data, $module);
+
                 try {
-                    $tempFileName = $this->convertWordToPdf($tempFileName);
+                    if (!class_exists('\Mpdf\Mpdf')) {
+                        throw new Exception("Global mPDF library not found. Please run 'composer require mpdf/mpdf' in Vtiger root.");
+                    }
+
+                    $mpdfTempCache = sys_get_temp_dir() . '/mpdf_exportCache';
+                    if (!is_dir($mpdfTempCache)) {
+                        mkdir($mpdfTempCache, 0777, true);
+                    }
+
+                    $mpdf = new \Mpdf\Mpdf([
+                        'mode' => 'utf-8',
+                        'format' => 'Letter',
+                        'tempDir' => $mpdfTempCache,
+                    ]);
+                    $mpdf->WriteHTML($processedHtml);
+                    $mpdf->Output($tempFileName, \Mpdf\Output\Destination::FILE);
+
                     $ext = 'pdf';
                     $contentType = 'application/pdf';
-                } catch (Exception $e) {
-                    echo "Error generating PDF: " . $e->getMessage();
-                    return;
+
+                } catch (\Throwable $e) {
+                    die("Error generating PDF with mPDF: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
                 }
-            } else {
-                $ext = 'docx';
-                $contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
             }
 
-        } elseif ($ext === 'html') {
-            // HTML Template (PDF Maker Style)
-            $htmlContent = file_get_contents($templatePath);
-            $processedHtml = $this->processHtmlTemplate($htmlContent, $recordModel, $data, $module);
+            $finalFileName = $module . "_" . $recordModel->get('no') . "." . $ext;
+            if ($recordModel->get('quote_no'))
+                $finalFileName = "Quote_" . $recordModel->get('quote_no') . "." . $ext;
+            if ($recordModel->get('salesorder_no'))
+                $finalFileName = "SalesOrder_" . $recordModel->get('salesorder_no') . "." . $ext;
+            if ($recordModel->get('invoice_no'))
+                $finalFileName = "Invoice_" . $recordModel->get('invoice_no') . "." . $ext;
+            if ($recordModel->get('purchaseorder_no'))
+                $finalFileName = "PO_" . $recordModel->get('purchaseorder_no') . "." . $ext;
 
-            try {
-                // Initialize modern mPDF installed via global Composer
-                if (!class_exists('\Mpdf\Mpdf')) {
-                    throw new Exception("Global mPDF library not found. Please run 'composer require mpdf/mpdf' in Vtiger root, or ensure the docker-entrypoint installed it. If you recently installed the module, please restart your Docker container for the script to run.");
-                }
-
-                $mpdf = new \Mpdf\Mpdf(['mode' => 'utf-8', 'format' => 'A4']);
-                $mpdf->WriteHTML($processedHtml);
-
-                // Save to temp file
-                $mpdf->Output($tempFileName, \Mpdf\Output\Destination::FILE);
-
-                $ext = 'pdf';
-                $contentType = 'application/pdf';
-
-            } catch (\Throwable $e) {
-                die("Error generating PDF with mPDF: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
+            // Save to Documents if requested
+            if ($saveToDocs) {
+                $this->saveToDocuments($recordModel, $tempFileName, $finalFileName);
             }
+
+            // Output file (inline for preview, attachment for download)
+            $isPreview = ($request->get('preview') === '1');
+            $disposition = $isPreview ? 'inline' : 'attachment';
+
+            if (ob_get_length()) {
+                ob_clean();
+            }
+            header("Content-Type: " . $contentType);
+            header("Content-Disposition: " . $disposition . "; filename=\"" . $finalFileName . "\"");
+            header("Content-Transfer-Encoding: binary");
+            header("Expires: 0");
+            header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+            header("Pragma: public");
+            header("Content-Length: " . filesize($tempFileName));
+            readfile($tempFileName);
+            unlink($tempFileName);
+            exit;
+
+        } catch (\Throwable $e) {
+            die("<h2 style='color:red;'>WordExport Fatal Error:</h2><pre>" . htmlspecialchars((string) $e) . "</pre>");
         }
-
-        $finalFileName = $module . "_" . $recordModel->get('no') . "." . $ext; // Generic name
-        // Try to find specific number field
-        if ($recordModel->get('quote_no'))
-            $finalFileName = "Quote_" . $recordModel->get('quote_no') . "." . $ext;
-        if ($recordModel->get('salesorder_no'))
-            $finalFileName = "SalesOrder_" . $recordModel->get('salesorder_no') . "." . $ext;
-        if ($recordModel->get('invoice_no'))
-            $finalFileName = "Invoice_" . $recordModel->get('invoice_no') . "." . $ext;
-        if ($recordModel->get('purchaseorder_no'))
-            $finalFileName = "PO_" . $recordModel->get('purchaseorder_no') . "." . $ext;
-
-
-        // 7. Save to Documents if requested
-        if ($saveToDocs) {
-            $this->saveToDocuments($recordModel, $tempFileName, $finalFileName);
-        }
-
-        // 8. Download
-        header("Content-Description: File Transfer");
-        header("Content-Type: " . $contentType);
-        header("Content-Disposition: attachment; filename=\"" . $finalFileName . "\"");
-        header("Content-Transfer-Encoding: binary");
-        header("Expires: 0");
-        header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
-        header("Pragma: public");
-        header("Content-Length: " . filesize($tempFileName));
-        readfile($tempFileName);
-
-        // Cleanup
-        unlink($tempFileName);
     }
 
     // --- WORD Helper ---
@@ -161,14 +179,49 @@ class WordExport_Export_Action extends Vtiger_Action_Controller
         // 0. Pre-processing: Merge Header/Footer if separate? (User provided them as blocks, assuming file is already merged or we handle structure here)
         // For now, we assume the input $html is the full content.
 
-        // 1. Company Information (Mocked or Fetched)
-        // In a real Vtiger env, we would query vtiger_organizationdetails
-        $html = str_replace('$COMPANY_LOGO$', '<img src="test/logo/vtiger-crm-logo.gif" height="60">', $html); // Placeholder
-        $html = str_replace('$COMPANY_NAME$', 'My Company Name', $html);
-        $html = str_replace('$COMPANY_ADDRESS$', '123 Business Rd', $html);
-        $html = str_replace('$COMPANY_CITY$', 'City', $html);
-        $html = str_replace('$COMPANY_STATE$', 'State', $html);
-        $html = str_replace('$COMPANY_ZIP$', '00000', $html);
+        // 0. Static Images — $IMG_filename$ → base64 embedded img tag
+        // Images stored in modules/WordExport/images/
+        // Tag example: $IMG_Logo_AAS$ → loads Logo_AAS.png (or .jpg, .gif, .svg)
+        $imagesDir = __DIR__ . '/../images/';
+        // Tag format: $IMG_filename$  or  $IMG_filename|width$  or  $IMG_filename|width|height$
+        // Examples:  $IMG_Logo_AAS$   /  $IMG_Logo_AAS|40mm$   /  $IMG_Logo_AAS|40mm|25mm$
+        $html = preg_replace_callback('/\$IMG_([A-Za-z0-9_\-]+)(?:\|([^|$]*))?(?:\|([^$]*))?\$/', function($matches) use ($imagesDir) {
+            $name   = $matches[1];
+            $width  = !empty($matches[2]) ? $matches[2] : null;
+            $height = !empty($matches[3]) ? $matches[3] : null;
+
+            foreach (['png', 'jpg', 'jpeg', 'gif', 'svg'] as $ext) {
+                $found = glob($imagesDir . '*.' . $ext);
+                foreach ($found as $file) {
+                    if (strcasecmp(pathinfo($file, PATHINFO_FILENAME), $name) === 0) {
+                        $mime = mime_content_type($file);
+                        $data = base64_encode(file_get_contents($file));
+                        $attrs = '';
+                        if ($width)  $attrs .= ' width="'  . htmlspecialchars($width)  . '"';
+                        if ($height) $attrs .= ' height="' . htmlspecialchars($height) . '"';
+                        return '<img src="data:' . $mime . ';base64,' . $data . '"' . $attrs . '>';
+                    }
+                }
+            }
+            return '';
+        }, $html);
+
+        // 1. Company Logo & Organization Details
+        $orgDetails = $this->getOrganizationDetails();
+        $logoImg = $this->getCompanyLogo();
+
+        $html = str_replace('$COMPANY_LOGO$', $logoImg, $html);
+
+        $html = str_replace('$COMPANY_NAME$',    $orgDetails['organizationname'] ?? '', $html);
+        $html = str_replace('$COMPANY_ADDRESS$', $orgDetails['address'] ?? '', $html);
+        $html = str_replace('$COMPANY_CITY$',    $orgDetails['city'] ?? '', $html);
+        $html = str_replace('$COMPANY_STATE$',   $orgDetails['state']  ?? '', $html);
+        $html = str_replace('$COMPANY_ZIP$',     $orgDetails['code']   ?? '', $html);
+        $html = str_replace('$COMPANY_CODE$',    $orgDetails['code']   ?? '', $html);
+        $html = str_replace('$COMPANY_VATID$',   $orgDetails['vatid']  ?? '', $html);
+        $html = str_replace('$COMPANY_PHONE$',   $orgDetails['phone']  ?? '', $html);
+        $html = str_replace('$COMPANY_WEBSITE$', $orgDetails['website'] ?? '', $html);
+        $html = str_replace('$COMPANY_COUNTRY$', $orgDetails['country'] ?? '', $html);
 
         // 2. Current User Information
         $userModel = Vtiger_Record_Model::getInstanceById($recordModel->get('assigned_user_id'), 'Users');
@@ -177,65 +230,112 @@ class WordExport_Export_Action extends Vtiger_Action_Controller
         $html = str_replace('$USERS_EMAIL1$', $userModel->get('email1'), $html);
 
         // 3. Translation Labels %KEY%
-        $html = preg_replace_callback('/%(\w+)%/', function ($matches) use ($moduleName) {
-            return vtranslate($matches[1], $moduleName);
+        // Replace known labels FIRST with direct str_replace (most reliable)
+        $knownLabels = array(
+            '%G_Description%'     => 'Descripción',
+            '%G_List Price%'      => 'Precio Unitario',
+            '%G_Total%'           => 'Total',
+            '%G_Subtotal%'        => 'Subtotal',
+            '%G_LBL_DISCOUNT%'    => 'Descuentos',
+            '%G_Tax%'             => 'Impuesto',
+            '%G_LBL_GRAND_TOTAL%' => 'TOTAL',
+            '%M_Quote No%'        => 'Cotización',
+        );
+        $html = str_replace(array_keys($knownLabels), array_values($knownLabels), $html);
+
+        // Then use preg_replace_callback for any remaining unknown %LABEL% tags
+        $labelTranslations = array(
+            'Description' => 'Descripción',
+            'List Price' => 'Precio Unitario',
+            'Total' => 'Total',
+            'Subtotal' => 'Subtotal',
+            'LBL_DISCOUNT' => 'Descuentos',
+            'Tax' => 'Impuesto',
+            'LBL_GRAND_TOTAL' => 'Total a Pagar'
+        );
+
+        $html = preg_replace_callback('/%([^%]+)%/', function ($matches) use ($moduleName, $labelTranslations) {
+            $key = trim($matches[1]);
+            $transModule = $moduleName;
+            $isGlobalLabel = false;
+
+            // Handle PDF Maker specific prefixes
+            $prefix = substr($key, 0, 2);
+            if ($prefix === 'M_') {
+                $key = substr($key, 2);           // Module specific
+            } elseif ($prefix === 'G_') {
+                $key = substr($key, 2);           // Global dictionary
+                $transModule = 'Vtiger';
+                $isGlobalLabel = true;
+            } elseif ($prefix === 'R_') {
+                // Related field tag (e.g., R_ACCOUNTID_CF_856).
+                // Since locating the precise related module dynamically is complex here,
+                // falling back to Vtiger global dictionary is the safest approach for labels.
+                $transModule = 'Vtiger';
+            }
+
+            // For global labels, use fallback dictionary first
+            if ($isGlobalLabel && isset($labelTranslations[$key])) {
+                return $labelTranslations[$key];
+            }
+
+            // Otherwise try to translate
+            return vtranslate($key, $transModule);
         }, $html);
 
-        // 4. Record Fields (Direct & Generic)
+        // 4. Record Fields (Direct & Generic) — includes custom fields (cf_*)
+
         foreach ($data as $key => $value) {
-            if (is_string($value)) {
-                // Direct: $SUBJECT$
-                $html = str_replace('$' . strtoupper($key) . '$', $value, $html);
-                // Module: $QUOTES_SUBJECT$
-                $html = str_replace('$' . strtoupper($moduleName) . '_' . strtoupper($key) . '$', $value, $html);
+            if (is_array($value) || is_object($value)) continue;
+
+            $displayValue = ($value === null) ? '' : (string)$value;
+
+            // For long text fields, convert newlines to <br /> for mPDF
+            if (in_array(strtolower($key), ['terms_conditions', 'notes', 'description', 'comment'])) {
+                $displayValue = nl2br($displayValue);
             }
+
+            // Direct: $CF_996$
+            $html = str_replace('$' . strtoupper($key) . '$', $displayValue, $html);
+            // Module-prefixed: $QUOTES_CF_996$
+            $html = str_replace('$' . strtoupper($moduleName) . '_' . strtoupper($key) . '$', $displayValue, $html);
         }
 
-        // 5. Related Fields $R_FIELD_SUBFIELD$
-        // Regex to find tokens starting with $R_
-        $html = preg_replace_callback('/\$R_(\w+)_(\w+)\$/', function ($matches) use ($recordModel) {
-            $relFieldName = strtolower($matches[1]); // e.g., contactid
-            $targetField = strtolower($matches[2]);  // e.g., firstname
-
-            // Special handling for recursive lookup could go here.
-            // Simplified: Use Vtiger display value if it matches the standard "reference" logic
-            if ($recordModel->get($relFieldName)) {
-                // This is expensive: Loading related record
-                // Optimally we'd use getDisplayValue or a lighter lookup
-                try {
-                    $relId = $recordModel->get($relFieldName);
-                    // Determine module? Vtiger API doesn't always tell us easily without metadata.
-                    // Doing a "best guess" or using Vtiger_Record_Model::getInstanceById if we knew the module.
-                    // For now, simpler approach: if it is a standard field, try to fetch it.
-                    // A better approach in Vtiger 7 is uitype 10 handling.
-
-                    // Fallback: If it's just the name validation (e.g. R_CONTACTID_FIRSTNAME)
-                    // We might not be able to fetch deep fields without more context.
-                    // RETURNING EMPTY for now to prevent breaking, unless we add deep logic.
-                    return "";
-                } catch (Exception $e) {
-                    return "";
-                }
-            }
-            return "";
-        }, $html);
-
-        // FIX: Manual mapping for specific requested User fields to ensure they work immediately
+        // 5. Related Fields — resolve known fields FIRST, then clear any remaining $R_*
         $contactId = $recordModel->get('contact_id');
         if ($contactId) {
-            $contactModel = Vtiger_Record_Model::getInstanceById($contactId, 'Contacts');
-            $html = str_replace('$R_CONTACTID_FIRSTNAME$', $contactModel->get('firstname'), $html);
-            $html = str_replace('$R_CONTACTID_LASTNAME$', $contactModel->get('lastname'), $html);
-            $html = str_replace('$R_CONTACTID_SALUTATIONTYPE$', $contactModel->get('salutationtype'), $html);
+            try {
+                $contactModel = Vtiger_Record_Model::getInstanceById($contactId, 'Contacts');
+                $html = str_replace('$R_CONTACTID_FIRSTNAME$',    $contactModel->get('firstname') ?? '', $html);
+                $html = str_replace('$R_CONTACTID_LASTNAME$',     $contactModel->get('lastname') ?? '', $html);
+                $html = str_replace('$R_CONTACTID_SALUTATIONTYPE$', $contactModel->get('salutationtype') ?? '', $html);
+                $html = str_replace('$R_CONTACTID_CF_982$',       $contactModel->get('cf_982') ?? '', $html);
+            } catch (Exception $e) {}
         }
 
         $accountId = $recordModel->get('account_id');
         if ($accountId) {
-            $accountModel = Vtiger_Record_Model::getInstanceById($accountId, 'Accounts');
-            $html = str_replace('$R_ACCOUNTID_CF_852$', $accountModel->get('cf_852'), $html); // Custom field example
-            $html = str_replace('$R_ACCOUNTID_INDUSTRY$', $accountModel->get('industry'), $html);
-            // ... Add other specific fields from requirements if needed generic parser fails
+            try {
+                $accountModel = Vtiger_Record_Model::getInstanceById($accountId, 'Accounts');
+                $accountName  = $accountModel->get('accountname') ?? '';
+                $html = str_replace('$QUOTES_ACCOUNT_NAME$',   $accountName, $html);
+                $html = str_replace('$ACCOUNT_NAME$',          $accountName, $html);
+                $html = str_replace('$R_ACCOUNTID_ACCOUNTNAME$', $accountName, $html);
+                $html = str_replace('$R_ACCOUNTID_CF_852$',    $accountModel->get('cf_852') ?? '', $html);
+                $html = str_replace('$R_ACCOUNTID_INDUSTRY$',  $accountModel->get('industry') ?? '', $html);
+            } catch (Exception $e) {}
         }
+
+        $potentialId = $recordModel->get('potential_id');
+        if ($potentialId) {
+            try {
+                $potentialModel = Vtiger_Record_Model::getInstanceById($potentialId, 'Potentials');
+                $html = str_replace('$R_POTENTIALID_CF_984$', $potentialModel->get('cf_984') ?? '', $html);
+            } catch (Exception $e) {}
+        }
+
+        // Clear any remaining unresolved $R_* placeholders
+        $html = preg_replace('/\$R_[A-Z0-9_]+\$/', '', $html);
 
         // 6. Inventory Block
         $pattern = '/#PRODUCTBLOC_START#(.*?)#PRODUCTBLOC_END#/s';
@@ -260,12 +360,44 @@ class WordExport_Export_Action extends Vtiger_Action_Controller
         }
 
         // 7. Totals & Currencies
-        $html = str_replace('$TOTALWITHOUTVAT$', $data['hdnSubTotal'] ?? '0.00', $html);
-        $html = str_replace('$TOTAL$', $data['hdnGrandTotal'] ?? '0.00', $html);
-        $html = str_replace('$VAT$', $data['hdnTaxType'] ?? '0.00', $html);
-        $html = str_replace('$TOTALDISCOUNT$', $data['hdnDiscountAmount'] ?? '0.00', $html);
-        $html = str_replace('$CURRENCYSYMBOL$', '$', $html); // Should fetch currency symbol
-        $html = str_replace('$CURRENCYNAME$', 'USD', $html);
+        $subTotal = floatval($data['hdnSubTotal'] ?? 0);
+        $taxAmount = floatval($data['hdnTaxType'] ?? 0);
+        $discount = floatval($data['hdnDiscountAmount'] ?? 0);
+        $grandTotal = floatval($data['hdnGrandTotal'] ?? 0);
+
+        // Calculate tax percentage if subtotal exists
+        $taxPercent = ($subTotal > 0) ? number_format(($taxAmount / $subTotal) * 100, 2) : '0.00';
+
+        $html = str_replace('$TOTALWITHOUTVAT$', number_format($subTotal, 2), $html);
+        $html = str_replace('$TOTAL$', number_format($grandTotal, 2), $html);
+        $html = str_replace('$VAT$', number_format($taxAmount, 2), $html);
+        $html = str_replace('$VATPERCENT$', $taxPercent, $html);
+        $html = str_replace('$TOTALDISCOUNT$', number_format($discount, 2), $html);
+        // Fetch currency from record's currency_id
+        $currencySymbol = '$';
+        $currencyName   = 'USD';
+        $currencyId = $data['currency_id'] ?? null;
+        if ($currencyId) {
+            try {
+                $db = PearDatabase::getInstance();
+                $cRes = $db->pquery("SELECT currency_name, currency_symbol FROM vtiger_currency_info WHERE id = ?", array($currencyId));
+                if ($db->num_rows($cRes) > 0) {
+                    $currencyName   = $db->query_result($cRes, 0, 'currency_name')   ?: $currencyName;
+                    $currencySymbol = $db->query_result($cRes, 0, 'currency_symbol') ?: $currencySymbol;
+                }
+            } catch (Exception $e) {}
+        }
+        $html = str_replace('$CURRENCYSYMBOL$', $currencySymbol, $html);
+        $html = str_replace('$CURRENCYNAME$',   $currencyName,   $html);
+
+        // 8. Final fallback: Replace any remaining %G_% labels that weren't translated
+        $html = str_replace('%G_Description%', 'Descripción', $html);
+        $html = str_replace('%G_List Price%', 'Precio Unitario', $html);
+        $html = str_replace('%G_Total%', 'Total', $html);
+        $html = str_replace('%G_Subtotal%', 'Subtotal', $html);
+        $html = str_replace('%G_LBL_DISCOUNT%', 'Descuentos', $html);
+        $html = str_replace('%G_Tax%', 'Impuesto', $html);
+        $html = str_replace('%G_LBL_GRAND_TOTAL%', 'TOTAL', $html);
 
         return $html;
     }
@@ -282,9 +414,9 @@ class WordExport_Export_Action extends Vtiger_Action_Controller
         for ($i = 0; $i < $num_rows; $i++) {
             $row = $db->query_result_rowdata($result, $i);
             $row['product_name'] = getProductName($row['productid']);
-            $row['product_qty'] = $row['quantity'];
-            $row['product_price'] = $row['listprice'];
-            $row['product_total'] = $row['listprice'] * $row['quantity'];
+            $row['product_qty']   = number_format(floatval($row['quantity']), 2);
+            $row['product_price'] = number_format(floatval($row['listprice']), 2);
+            $row['product_total'] = number_format(floatval($row['listprice']) * floatval($row['quantity']), 2);
             $row['comment'] = $row['comment'];
 
             // Fetch Product Code (PartNumber)
@@ -346,5 +478,98 @@ class WordExport_Export_Action extends Vtiger_Action_Controller
     private function saveToDocuments($recordModel, $filePath, $fileName)
     {
         // Placeholder
+    }
+
+    private function getOrganizationDetails()
+    {
+        $db = PearDatabase::getInstance();
+
+        // Try vtiger_organizationdetails (standard Vtiger table)
+        try {
+            $result = $db->pquery("SELECT * FROM vtiger_organizationdetails LIMIT 1", array());
+            if ($db->num_rows($result) > 0) {
+                $row = $db->query_result_rowdata($result, 0);
+                    return $row;
+            }
+        } catch (Exception $e) {
+            error_log('[WordExport] vtiger_organizationdetails error: ' . $e->getMessage());
+        }
+
+        // Fallback: try vtiger_companycheckout (some Vtiger versions)
+        try {
+            $result = $db->pquery("SELECT * FROM vtiger_companycheckout LIMIT 1", array());
+            if ($db->num_rows($result) > 0) {
+                $row = $db->query_result_rowdata($result, 0);
+                error_log('[WordExport] CompanyCheckout: ' . json_encode($row));
+                return $row;
+            }
+        } catch (Exception $e) {}
+
+        return array();
+    }
+
+    private function getCompanyLogo()
+    {
+        $rootDir = rtrim(vglobal('root_directory'), '/');
+        $db = PearDatabase::getInstance();
+        $logoFile = null;
+
+        // 1. Query DB for logo filename
+        try {
+            $result = $db->pquery("SELECT logoname FROM vtiger_organizationdetails LIMIT 1", array());
+            if ($db->num_rows($result) > 0) {
+                $logoname = $db->query_result($result, 0, 'logoname');
+                if ($logoname && $logoname !== '') {
+                    $docRoot = rtrim($_SERVER['DOCUMENT_ROOT'] ?? '', '/');
+                    $possiblePaths = array(
+                        $rootDir  . '/test/logo/'          . $logoname,
+                        $rootDir  . '/test/upload/images/' . $logoname,
+                        $rootDir  . '/test/upload/'        . $logoname,
+                        $rootDir  . '/storage/logo/'       . $logoname,
+                        $rootDir  . '/storage/'            . $logoname,
+                        $rootDir  . '/uploads/logos/'      . $logoname,
+                        $docRoot  . '/test/logo/'          . $logoname,
+                        $docRoot  . '/test/upload/images/' . $logoname,
+                        '/var/www/html/test/logo/'         . $logoname,
+                        '/var/www/html/test/upload/images/'. $logoname,
+                    );
+                    foreach ($possiblePaths as $path) {
+                        if (file_exists($path)) {
+                            $logoFile = $path;
+                            break;
+                        }
+                    }
+                }
+            }
+        } catch (Exception $e) {
+            error_log('[WordExport] Logo DB exception: ' . $e->getMessage());
+        }
+
+        // 2. If not found by name, try generic filenames
+        if (!$logoFile) {
+            $genericPaths = array(
+                $rootDir . '/test/upload/images/companylogo.png',
+                $rootDir . '/test/upload/images/companylogo.jpg',
+                $rootDir . '/test/upload/images/companylogo.gif',
+                $rootDir . '/test/logo/companylogo.png',
+                $rootDir . '/test/logo/companylogo.jpg',
+                $rootDir . '/test/logo/companylogo.gif',
+            );
+            foreach ($genericPaths as $path) {
+                if (file_exists($path)) {
+                    $logoFile = $path;
+                    break;
+                }
+            }
+        }
+
+        // 3. Return base64-embedded img tag (mPDF compatible) or empty string
+        if ($logoFile) {
+            $mime = mime_content_type($logoFile);
+            $data = base64_encode(file_get_contents($logoFile));
+            return '<img src="data:' . $mime . ';base64,' . $data . '">';
+        }
+
+        return '';
     }
 }

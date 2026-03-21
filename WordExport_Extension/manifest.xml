@@ -1,8 +1,9 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <module>
     <name>WordExport</name>
     <label>Word Export</label>
     <parent>Tools</parent>
+    <type>extension</type>
     <version>1.0</version>
     <dependencies>
         <vtiger_version>7.1.0</vtiger_version>
@@ -11,5 +12,24 @@
     <license>
         <inline>MIT License</inline>
     </license>
-    <type>extension</type>
+    <files>
+        <file>
+            <name>WordExport</name>
+            <type>module</type>
+            <path>modules/</path>
+        </file>
+    </files>
+    <tables>
+        <table>
+            <name>vtiger_wordexport_templates</name>
+            <sql><![CDATA[CREATE TABLE IF NOT EXISTS vtiger_wordexport_templates (
+                template_id INT(11) NOT NULL AUTO_INCREMENT,
+                module_name VARCHAR(50) NOT NULL,
+                filename VARCHAR(255) NOT NULL,
+                description TEXT,
+                createdtime DATETIME,
+                PRIMARY KEY (template_id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8]]></sql>
+        </table>
+    </tables>
 </module>

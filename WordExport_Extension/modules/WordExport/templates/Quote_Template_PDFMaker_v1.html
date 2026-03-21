@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <style type="text/css">
+        @page {
+            margin-top: 35mm;
+            margin-bottom: 25mm;
+            margin-left: 15mm;
+            margin-right: 15mm;
+            header: html_myHeader;
+            footer: html_myFooter;
+        }
+        body {
+            color: #555555;
+            background: #FFFFFF;
+            font-size: 12px;
+            font-family: sans-serif;
+        }
+        .header, .header td {
+            background-color: #FFFFFF;
+            border: none;
+            border-bottom: 1px solid #AAAAAA;
+            margin: 0px;
+            padding: 0px;
+        }
+    </style>
+</head>
+<body>
+    <htmlpageheader name="myHeader" style="display:none">
+        <table border="0" cellpadding="0" cellspacing="0" class="header" width="180mm" style="margin: 0; padding: 0;">
+            <tr>
+                <td width="60mm" style="padding: 0 0 3px 0; margin: 0;">
+                    $IMG_Logo_AAS|30mm$
+                </td>
+                <td width="60mm" style="padding: 0; margin: 0; text-align: center;">
+                    <p style="margin: 0; padding: 0; font-size: 2em; color: #7c8c95;">%M_Quote No%</p>
+                </td>
+                <td width="60mm" style="padding: 0; margin: 0; text-align: right;">
+                    <p style="margin: 0; padding: 0; font-size: 2em; color: #333333;">$QUOTES_QUOTE_NO$ $QUOTES_CF_996$</p>
+                    <p style="font-size: 0.8em; margin: 2px 0 0 0; padding: 0;">$QUOTES_MODIFIEDTIME$</p>
+                </td>
+            </tr>
+        </table>
+    </htmlpageheader>
+
+    <htmlpagefooter name="myFooter" style="display:none">
+        <table border="0" cellpadding="4" cellspacing="0" width="180mm"
+            style="margin: 0; padding: 0; border-collapse: collapse; border-top: 1px solid #AAAAAA;">
+            <tr>
+                <td width="60mm" style="padding: 4px 8px; text-align: center; vertical-align: bottom; font-size: 8px; border: none;">
+                    <strong>Matriz</strong><br />
+                    Violeta 226 Int 8<br />
+                    Col San Carlos Guadalajara<br />
+                    Jalisco, CP 44460<br />
+                    Tel: (33) 3650-3400, 3650-3659, 1306-0836
+                </td>
+                <td width="60mm" style="padding: 4px 8px; text-align: center; vertical-align: bottom; font-size: 8px; border: none;">
+                    <strong>https://www.aasystems.com.mx</strong><br /><br />
+                    <span style="font-size:10px;">mercadotecnia@aasystems.com.mx<br /><br />
+                    administracion@aasystems.com.mx</span>
+                </td>
+                <td width="60mm" style="padding: 4px 8px; text-align: center; vertical-align: bottom; font-size: 8px; border: none;">
+                    <strong>Sucursal</strong><br />
+                    Motozintla #42<br />
+                    Col Letran Valle, Del. Benito Juarez<br />
+                    CDMX, CP 03650<br />
+                    Tel: (55) 5615-6763, 1518-0139
+                </td>
+            </tr>
+        </table>
+    </htmlpagefooter>
+
+    <!-- v1: Solo header + footer + contenido mínimo -->
+    <h2 style="color: #7c8c95;">v1 - Header y Footer</h2>
+    <p>Quote: $QUOTES_QUOTE_NO$</p>
+    <p>Empresa: $COMPANY_NAME$</p>
+    <p>Si ves header arriba y footer abajo, v1 funciona.</p>
+</body>
+</html>
