@@ -34,13 +34,33 @@ WordExport es una extensión para Vtiger CRM 7.1 que permite exportar registros 
 - Vincula el documento al registro fuente (Cotización, Pedido, etc.)
 - Archivo se guarda en `storage/` de Vtiger
 
-### 2.5 Administración de Templates
+### 2.5 Exportación a Word (.docx)
+- Botón **"Exportar Word"** separado del PDF en el popup
+- Solo templates `.docx` (selector independiente)
+- Solo descarga directa — **sin previsualización** (Word no se puede mostrar en iframe)
+- **Sin guardar en Documentos** — el archivo se descarga directamente
+- Nombre de archivo editable antes de descargar
+- Variables en el template Word usan formato PHPWord: `${VARIABLE_NAME}`
+- Misma resolución de variables que HTML (empresa, usuario, campos relacionados, financieros, etc.)
+
+#### Variables en templates Word (.docx)
+En el documento Word, las variables se escriben como `${NOMBRE}`:
+```
+${COMPANY_NAME}           → Nombre de empresa
+${R_CONTACTID_FIRSTNAME}  → Nombre del contacto
+${QUOTES_QUOTE_NO}        → Número de cotización
+${TOTAL}                  → Total formateado
+${CURRENCYSYMBOL}         → Símbolo de moneda
+```
+> ⚠️ PHPWord usa `${var}` (con llaves), NO `$var$` (con signos de dólar como en HTML templates)
+
+### 2.6 Administración de Templates
 - Vista en `/index.php?module=WordExport&view=ListTemplates`
 - **Upload**: subir nuevos templates HTML/DOCX
 - **Download**: descargar templates existentes para edición
 - **Delete**: eliminar templates (con confirmación)
 
-### 2.6 Resolución Automática de Variables
+### 2.7 Resolución Automática de Variables
 - **Imágenes estáticas:** `$IMG_nombre$` → Imagen desde `modules/WordExport/images/`
 - **Empresa:** `$COMPANY_*$` → Datos desde `vtiger_organizationdetails`
 - **Campos directos:** `$CAMPO$` → Valores del registro (usa `getDisplayValue()` para checkboxes→Sí/No, picklists→label)

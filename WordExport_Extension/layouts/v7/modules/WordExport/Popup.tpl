@@ -3,7 +3,7 @@
     <div class="modal-content">
         <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-            <h3 class="modal-title">{vtranslate('LBL_EXPORT_TO_WORD', $MODULE)}</h3>
+            <h3 class="modal-title">Exportar a PDF / Word</h3>
         </div>
         <div class="modal-body">
             <form id="wordExportForm" class="form-horizontal">
@@ -12,49 +12,107 @@
                 <input type="hidden" name="record" value="{$RECORD}" />
                 <input type="hidden" name="source_module" value="{$SOURCE_MODULE}" />
 
-                <div class="form-group">
-                    <label class="control-label col-sm-3">{vtranslate('LBL_SELECT_TEMPLATE', $MODULE)}</label>
-                    <div class="col-sm-8">
-                        <select name="template" class="form-control" style="width: 100%;">
-                            {foreach from=$TEMPLATES item=TEMPLATE}
-                                <option value="{$TEMPLATE}">{$TEMPLATE}</option>
-                            {/foreach}
-                        </select>
-                        <div style="margin-top: 5px; text-align: right;">
-                            <a href="index.php?module=WordExport&view=ListTemplates" target="_blank" style="font-size: 11px;">
-                                <i class="fa fa-cog"></i> Administrar Templates
-                            </a>
+                {* ===== SECCIÓN PDF (templates HTML) ===== *}
+                <div style="border: 1px solid #ddd; border-radius: 4px; padding: 12px; margin-bottom: 12px; background: #f9f9f9;">
+                    <h5 style="margin: 0 0 10px 0; color: #333;"><i class="fa fa-file-pdf-o"></i> Exportar a PDF</h5>
+
+                    {if count($HTML_TEMPLATES) > 0}
+                    <div class="form-group" style="margin-bottom: 8px;">
+                        <label class="control-label col-sm-3">Template</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control template-filter" data-target="template_html" placeholder="Buscar template..." style="margin-bottom: 4px;" />
+                            <select name="template_html" class="form-control" style="width: 100%;" size="4">
+                                {foreach from=$HTML_TEMPLATES item=TEMPLATE}
+                                    <option value="{$TEMPLATE}">{$TEMPLATE}</option>
+                                {/foreach}
+                            </select>
                         </div>
                     </div>
-                </div>
 
-                <input type="hidden" name="format" value="pdf" />
-
-                <div class="form-group">
-                    <label class="control-label col-sm-3">Nombre del archivo</label>
-                    <div class="col-sm-8">
-                        <div class="input-group">
-                            <input type="text" name="custom_filename" class="form-control" value="{$DEFAULT_FILENAME}" />
-                            <span class="input-group-addon">.pdf</span>
+                    <div class="form-group" style="margin-bottom: 8px;">
+                        <label class="control-label col-sm-3">Nombre</label>
+                        <div class="col-sm-8">
+                            <div class="input-group">
+                                <input type="text" name="custom_filename" class="form-control" value="{$DEFAULT_FILENAME}" />
+                                <span class="input-group-addon">.pdf</span>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="form-group">
-                    <div class="col-sm-offset-3 col-sm-8">
-                        <div class="checkbox">
-                            <label>
-                                <input type="checkbox" name="save_to_docs" value="1"> {vtranslate('LBL_SAVE_TO_DOCUMENTS', $MODULE)}
-                            </label>
+                    <div class="form-group" style="margin-bottom: 5px;">
+                        <div class="col-sm-offset-3 col-sm-8">
+                            <div class="checkbox" style="margin: 0;">
+                                <label>
+                                    <input type="checkbox" name="save_to_docs" value="1"> Guardar en Documentos
+                                </label>
+                            </div>
                         </div>
                     </div>
+
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <div class="col-sm-offset-3 col-sm-8">
+                            <button class="btn btn-info btn-sm" id="btnPreview" style="margin-right: 5px;">
+                                <i class="fa fa-eye"></i> Previsualizar
+                            </button>
+                            <button class="btn btn-primary btn-sm" id="btnExportPdf">
+                                <i class="fa fa-download"></i> Exportar PDF
+                            </button>
+                        </div>
+                    </div>
+                    {else}
+                    <p style="color: #999; margin: 0;">No hay templates PDF para este m&oacute;dulo.</p>
+                    {/if}
                 </div>
+
+                {* ===== SECCIÓN WORD (templates DOCX) ===== *}
+                <div style="border: 1px solid #ddd; border-radius: 4px; padding: 12px; background: #f9f9f9;">
+                    <h5 style="margin: 0 0 10px 0; color: #333;"><i class="fa fa-file-word-o"></i> Exportar a Word</h5>
+
+                    {if count($DOCX_TEMPLATES) > 0}
+                    <div class="form-group" style="margin-bottom: 8px;">
+                        <label class="control-label col-sm-3">Template</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control template-filter" data-target="template_docx" placeholder="Buscar template..." style="margin-bottom: 4px;" />
+                            <select name="template_docx" class="form-control" style="width: 100%;" size="6">
+                                {foreach from=$DOCX_TEMPLATES item=TEMPLATE}
+                                    <option value="{$TEMPLATE}">{$TEMPLATE}</option>
+                                {/foreach}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 8px;">
+                        <label class="control-label col-sm-3">Nombre</label>
+                        <div class="col-sm-8">
+                            <div class="input-group">
+                                <input type="text" name="custom_filename_docx" class="form-control" value="{$DEFAULT_FILENAME}" />
+                                <span class="input-group-addon">.docx</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <div class="col-sm-offset-3 col-sm-8">
+                            <button class="btn btn-success btn-sm" id="btnExportWord">
+                                <i class="fa fa-download"></i> Exportar Word
+                            </button>
+                        </div>
+                    </div>
+                    {else}
+                    <p style="color: #999; margin: 0;">No hay templates Word para este m&oacute;dulo.</p>
+                    {/if}
+                </div>
+
             </form>
+
+            <div style="margin-top: 8px; text-align: right;">
+                <a href="index.php?module=WordExport&view=ListTemplates" target="_blank" style="font-size: 11px;">
+                    <i class="fa fa-cog"></i> Administrar Templates
+                </a>
+            </div>
         </div>
         <div class="modal-footer">
             <button class="btn btn-default" data-dismiss="modal">Cerrar</button>
-            <button class="btn btn-info" id="btnPreview"><i class="fa fa-eye"></i> Previsualizar</button>
-            <button class="btn btn-primary" id="btnExportConfirm"><i class="fa fa-download"></i> Exportar</button>
         </div>
     </div>
 </div>
@@ -63,7 +121,42 @@
 {literal}
 jQuery(document).ready(function($) {
 
-    // --- Overlay de preview: se crea en document.body para evitar problemas de stacking context ---
+    // --- Filtro de templates: buscar mientras escribes ---
+    $('.template-filter').on('keyup', function() {
+        var query = $(this).val().toLowerCase();
+        var selectName = $(this).data('target');
+        var $select = $('[name="' + selectName + '"]');
+        var firstVisible = null;
+
+        $select.find('option').each(function() {
+            var text = $(this).text().toLowerCase();
+            if (query === '' || text.indexOf(query) !== -1) {
+                $(this).show();
+                if (!firstVisible) firstVisible = $(this);
+            } else {
+                $(this).hide();
+            }
+        });
+
+        // Auto-select first visible match
+        if (firstVisible) {
+            $select.val(firstVisible.val());
+        }
+    });
+
+    // Sort options alphabetically on load
+    $('select[name="template_html"], select[name="template_docx"]').each(function() {
+        var $select = $(this);
+        var options = $select.find('option').toArray().sort(function(a, b) {
+            return a.text.localeCompare(b.text);
+        });
+        $select.empty().append(options);
+        if (options.length > 0) {
+            $select.val(options[0].value);
+        }
+    });
+
+    // --- Overlay de preview en document.body ---
     var overlayId = 'wePreviewOverlay';
     if (!$('#' + overlayId).length) {
         var overlayHtml = '<div id="wePreviewOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:99999;">'
@@ -80,28 +173,16 @@ jQuery(document).ready(function($) {
         $(document.body).append(overlayHtml);
     }
 
-    function getFormParams() {
+    function getBaseParams() {
         var form = $('#wordExportForm');
-        var params = {
+        return {
             module:        'WordExport',
             action:        'Export',
             record:        form.find('[name=record]').val(),
-            source_module: form.find('[name=source_module]').val(),
-            template:      form.find('[name=template]').val(),
-            format:        'pdf'
+            source_module: form.find('[name=source_module]').val()
         };
-        var customName = form.find('[name=custom_filename]').val();
-        if (customName) {
-            params.custom_filename = customName;
-        }
-        if (form.find('[name=save_to_docs]').is(':checked')) {
-            params.save_to_docs = '1';
-        }
-        return params;
     }
 
-    // Descarga via iframe persistente en document.body
-    // Descarga sin navegar: iframe oculto en document.body
     function downloadViaIframe(url) {
         var frame = document.createElement('iframe');
         frame.style.cssText = 'display:none;width:0;height:0;position:absolute;left:-9999px';
@@ -110,48 +191,73 @@ jQuery(document).ready(function($) {
         setTimeout(function() { if (frame.parentNode) frame.parentNode.removeChild(frame); }, 120000);
     }
 
-    // Exportar (descarga directa)
-    $('#btnExportConfirm').on('click', function(e) {
+    // ===== PDF: Exportar =====
+    $('#btnExportPdf').on('click', function(e) {
         e.preventDefault();
-        var params = getFormParams();
-        if (!params.template) {
-            alert('Por favor selecciona un template.');
-            return;
-        }
+        var form = $('#wordExportForm');
+        var template = form.find('[name=template_html]').val();
+        if (!template) { alert('Selecciona un template PDF.'); return; }
+
+        var params = getBaseParams();
+        params.template = template;
+        params.format = 'pdf';
+        var customName = form.find('[name=custom_filename]').val();
+        if (customName) params.custom_filename = customName;
+        if (form.find('[name=save_to_docs]').is(':checked')) params.save_to_docs = '1';
+
         downloadViaIframe('index.php?' + $.param(params));
         app.hideModalWindow();
     });
 
-    // Previsualizar (PDF inline en overlay)
+    // ===== PDF: Previsualizar =====
     $('#btnPreview').on('click', function(e) {
         e.preventDefault();
-        var params = getFormParams();
-        if (!params.template) {
-            alert('Por favor selecciona un template.');
-            return;
-        }
-        var previewParams = $.extend({}, params, {preview: '1'});
-        var previewUrl = 'index.php?' + $.param(previewParams);
+        var form = $('#wordExportForm');
+        var template = form.find('[name=template_html]').val();
+        if (!template) { alert('Selecciona un template PDF.'); return; }
 
-        $('#btnPreviewDownload').data('downloadParams', params);
-        $('#wePreviewFrame').attr('src', previewUrl);
+        var params = getBaseParams();
+        params.template = template;
+        params.format = 'pdf';
+        params.preview = '1';
+
+        var downloadParams = $.extend({}, params);
+        delete downloadParams.preview;
+        var customName = form.find('[name=custom_filename]').val();
+        if (customName) downloadParams.custom_filename = customName;
+
+        $('#btnPreviewDownload').data('downloadParams', downloadParams);
+        $('#wePreviewFrame').attr('src', 'index.php?' + $.param(params));
         $('#wePreviewOverlay').fadeIn(200);
     });
 
-    // Descargar desde overlay
+    // ===== WORD: Exportar =====
+    $('#btnExportWord').on('click', function(e) {
+        e.preventDefault();
+        var form = $('#wordExportForm');
+        var template = form.find('[name=template_docx]').val();
+        if (!template) { alert('Selecciona un template Word.'); return; }
+
+        var params = getBaseParams();
+        params.template = template;
+        params.format = 'docx';
+        var customName = form.find('[name=custom_filename_docx]').val();
+        if (customName) params.custom_filename = customName;
+
+        downloadViaIframe('index.php?' + $.param(params));
+        app.hideModalWindow();
+    });
+
+    // ===== Preview overlay controls =====
     $(document).on('click', '#btnPreviewDownload', function() {
         var params = $(this).data('downloadParams');
         if (params) downloadViaIframe('index.php?' + $.param(params));
     });
-
-    // Cerrar overlay
     $(document).on('click', '#btnPreviewClose', function() {
         $('#wePreviewOverlay').fadeOut(200, function() {
             $('#wePreviewFrame').attr('src', 'about:blank');
         });
     });
-
-    // Cerrar overlay al hacer click fuera del panel
     $(document).on('click', '#wePreviewOverlay', function(e) {
         if ($(e.target).is('#wePreviewOverlay')) {
             $('#btnPreviewClose').trigger('click');

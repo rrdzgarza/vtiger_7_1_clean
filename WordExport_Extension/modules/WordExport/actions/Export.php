@@ -67,7 +67,14 @@ class WordExport_Export_Action extends Vtiger_Action_Controller
 
             // ROUTING: Word vs HTML
             if ($ext === 'docx') {
-                $this->processWordTemplate($templatePath, $data, $recordModel, $tempFileName);
+                error_log('[WE] DOCX export: template=' . $templatePath . ' format=' . $format);
+                try {
+                    $this->processWordTemplate($templatePath, $data, $recordModel, $tempFileName);
+                    error_log('[WE] DOCX processed OK, size=' . filesize($tempFileName));
+                } catch (\Throwable $e) {
+                    error_log('[WE] DOCX ERROR: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
+                    die('Error processing Word template: ' . $e->getMessage());
+                }
 
                 if ($format === 'pdf') {
                     try {
@@ -185,21 +192,183 @@ class WordExport_Export_Action extends Vtiger_Action_Controller
     // --- WORD Helper ---
     private function processWordTemplate($templatePath, $data, $recordModel, $outputPath)
     {
-        $templateProcessor = new \PhpOffice\PhpWord\TemplateProcessor($templatePath);
-        foreach ($data as $key => $value) {
-            if (is_string($value)) {
-                $templateProcessor->setValue($key, $value);
+        $moduleName = $recordModel->getModuleName();
+        $tp = new \PhpOffice\PhpWord\TemplateProcessor($templatePath);
+
+        // Fix broken macros: Word sometimes splits ${VAR} across XML runs
+        // PHPWord handles this in constructor, but we also force a re-scan
+        // by doing a dummy setValue that won't match anything
+        try {
+            // Access internal XML to force macro cleanup
+            $reflection = new \ReflectionClass($tp);
+            if ($reflection->hasProperty('tempDocumentMainPart')) {
+                $prop = $reflection->getProperty('tempDocumentMainPart');
+                $prop->setAccessible(true);
+                $xml = $prop->getValue($tp);
+                // Merge split XML runs: <w:t>${</w:t></w:r><w:r><w:t>VAR}</w:t> → <w:t>${VAR}</w:t>
+                $xml = preg_replace_callback(
+                    '/\$\{([^}]*(?:</w:t></w:r>(?:<w:r[^>]*>)?<w:t[^>]*>)[^}]*)}/u',
+                    function($m) {
+                        $clean = preg_replace('/<[^>]+>/', '', $m[0]);
+                        return $clean;
+                    },
+                    $xml
+                );
+                $prop->setValue($tp, $xml);
             }
+        } catch (\Throwable $e) {
+            // If reflection fails, continue without fix
         }
-        $this->processInventoryLinesWord($recordModel, $templateProcessor);
-        $templateProcessor->saveAs($outputPath);
+
+        // 1. Company fields
+        $orgDetails = $this->getOrganizationDetails();
+        $tp->setValue('COMPANY_NAME',    $orgDetails['organizationname'] ?? '');
+        $tp->setValue('COMPANY_ADDRESS', $orgDetails['address'] ?? '');
+        $tp->setValue('COMPANY_CITY',    $orgDetails['city'] ?? '');
+        $tp->setValue('COMPANY_STATE',   $orgDetails['state'] ?? '');
+        $tp->setValue('COMPANY_CODE',    $orgDetails['code'] ?? '');
+        $tp->setValue('COMPANY_ZIP',     $orgDetails['code'] ?? '');
+        $tp->setValue('COMPANY_VATID',   $orgDetails['vatid'] ?? '');
+        $tp->setValue('COMPANY_PHONE',   $orgDetails['phone'] ?? '');
+        $tp->setValue('COMPANY_WEBSITE', $orgDetails['website'] ?? '');
+        $tp->setValue('COMPANY_COUNTRY', $orgDetails['country'] ?? '');
+
+        // 2. Assigned user
+        $userModel = Vtiger_Record_Model::getInstanceById($recordModel->get('assigned_user_id'), 'Users');
+        $tp->setValue('USERS_FIRST_NAME', $userModel->get('first_name') ?? '');
+        $tp->setValue('USERS_LAST_NAME',  $userModel->get('last_name') ?? '');
+        $tp->setValue('USERS_EMAIL1',     $userModel->get('email1') ?? '');
+
+        // Current logged-in user
+        $currentUser = Users_Record_Model::getCurrentUserModel();
+        $tp->setValue('R_USERS_FIRST_NAME', $currentUser->get('first_name') ?? '');
+        $tp->setValue('R_USERS_LAST_NAME',  $currentUser->get('last_name') ?? '');
+        $tp->setValue('R_USERS_EMAIL1',     $currentUser->get('email1') ?? '');
+
+        // Current date in Spanish
+        $dias = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+        $meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+        $now = time();
+        $fechaLarga = $dias[date('w', $now)] . ' ' . date('d', $now) . ' de ' . $meses[date('n', $now) - 1] . ' de ' . date('Y', $now);
+        $tp->setValue('FECHA_LARGA', $fechaLarga);
+        $tp->setValue('FECHA_CORTA', date('d/m/Y'));
+        $tp->setValue('FECHA', date('Y-m-d'));
+
+        // 3. Record fields with getDisplayValue
+        foreach ($data as $key => $value) {
+            if (is_array($value) || is_object($value)) continue;
+            $displayValue = '';
+            try {
+                $dv = $recordModel->getDisplayValue($key);
+                if ($dv !== false && $dv !== null) $displayValue = (string)$dv;
+            } catch (\Throwable $e) {}
+            if ($displayValue === '' && $value !== null && $value !== '') {
+                $displayValue = (string)$value;
+            }
+            $tp->setValue(strtoupper($key), $displayValue);
+            $tp->setValue(strtoupper($moduleName) . '_' . strtoupper($key), $displayValue);
+        }
+
+        // 4. Related fields — Contact
+        $contactId = $recordModel->get('contact_id');
+        if ($contactId) {
+            try {
+                $contactModel = Vtiger_Record_Model::getInstanceById($contactId, 'Contacts');
+                foreach ($contactModel->getData() as $cKey => $cVal) {
+                    if (is_array($cVal) || is_object($cVal)) continue;
+                    $tp->setValue('R_CONTACTID_' . strtoupper($cKey), ($cVal === null) ? '' : (string)$cVal);
+                }
+            } catch (Exception $e) {}
+        }
+
+        // Account
+        $accountId = $recordModel->get('account_id');
+        if ($accountId) {
+            try {
+                $accountModel = Vtiger_Record_Model::getInstanceById($accountId, 'Accounts');
+                foreach ($accountModel->getData() as $aKey => $aVal) {
+                    if (is_array($aVal) || is_object($aVal)) continue;
+                    $tp->setValue('R_ACCOUNTID_' . strtoupper($aKey), ($aVal === null) ? '' : (string)$aVal);
+                }
+                $tp->setValue('QUOTES_ACCOUNT_NAME', $accountModel->get('accountname') ?? '');
+                $tp->setValue('SALESORDER_ACCOUNT_NAME', $accountModel->get('accountname') ?? '');
+                $tp->setValue('ACCOUNT_NAME', $accountModel->get('accountname') ?? '');
+            } catch (Exception $e) {}
+        }
+
+        // Potential
+        $potentialId = $recordModel->get('potential_id');
+        if ($potentialId) {
+            try {
+                $potentialModel = Vtiger_Record_Model::getInstanceById($potentialId, 'Potentials');
+                foreach ($potentialModel->getData() as $pKey => $pVal) {
+                    if (is_array($pVal) || is_object($pVal)) continue;
+                    $tp->setValue('R_POTENTIALID_' . strtoupper($pKey), ($pVal === null) ? '' : (string)$pVal);
+                }
+            } catch (Exception $e) {}
+        }
+
+        // Quote (for SalesOrder)
+        $quoteId = $recordModel->get('quote_id');
+        if ($quoteId) {
+            try {
+                $quoteModel = Vtiger_Record_Model::getInstanceById($quoteId, 'Quotes');
+                foreach ($quoteModel->getData() as $qKey => $qVal) {
+                    if (is_array($qVal) || is_object($qVal)) continue;
+                    $tp->setValue('R_QUOTEID_' . strtoupper($qKey), ($qVal === null) ? '' : (string)$qVal);
+                }
+            } catch (Exception $e) {}
+        }
+
+        // 5. Financial totals
+        $subTotal = floatval($data['hdnSubTotal'] ?? 0);
+        $discount = floatval($data['hdnDiscountAmount'] ?? 0);
+        $grandTotal = floatval($data['hdnGrandTotal'] ?? 0);
+        $adjustment = floatval($data['txtAdjustment'] ?? 0);
+        $shAmount = floatval($data['hdnS_H_Amount'] ?? 0);
+        $preTaxTotal = $subTotal - $discount;
+        $taxAmount = $grandTotal - $preTaxTotal - $adjustment - $shAmount;
+        if ($taxAmount < 0) $taxAmount = 0;
+        $taxPercent = ($preTaxTotal > 0) ? number_format(($taxAmount / $preTaxTotal) * 100, 2) : '0.00';
+
+        $tp->setValue('TOTALWITHOUTVAT', number_format($subTotal, 2));
+        $tp->setValue('TOTAL', number_format($grandTotal, 2));
+        $tp->setValue('VAT', number_format($taxAmount, 2));
+        $tp->setValue('VATPERCENT', $taxPercent);
+        $tp->setValue('TOTALDISCOUNT', number_format($discount, 2));
+
+        // Currency
+        $currencySymbol = '$';
+        $currencyName = 'USD';
+        $currencyId = $data['currency_id'] ?? null;
+        if ($currencyId) {
+            try {
+                $db = PearDatabase::getInstance();
+                $cRes = $db->pquery("SELECT currency_name, currency_symbol FROM vtiger_currency_info WHERE id = ?", array($currencyId));
+                if ($db->num_rows($cRes) > 0) {
+                    $currencyName = $db->query_result($cRes, 0, 'currency_name') ?: $currencyName;
+                    $currencySymbol = $db->query_result($cRes, 0, 'currency_symbol') ?: $currencySymbol;
+                }
+            } catch (Exception $e) {}
+        }
+        $tp->setValue('CURRENCYSYMBOL', $currencySymbol);
+        $tp->setValue('CURRENCYNAME', $currencyName);
+
+        // 6. Inventory lines
+        $this->processInventoryLinesWord($recordModel, $tp);
+
+        $tp->saveAs($outputPath);
     }
 
     private function processInventoryLinesWord($recordModel, $processor)
     {
         $lineItems = $this->getInventoryItems($recordModel);
         if (count($lineItems) > 0) {
-            $processor->cloneRowAndSetValues('product_name', $lineItems);
+            try {
+                $processor->cloneRowAndSetValues('product_name', $lineItems);
+            } catch (\Throwable $e) {
+                // Template doesn't have product_name variable — skip inventory lines
+            }
         }
     }
 
@@ -266,6 +435,15 @@ class WordExport_Export_Action extends Vtiger_Action_Controller
         $html = str_replace('$R_USERS_FIRST_NAME$', $currentUser->get('first_name') ?? '', $html);
         $html = str_replace('$R_USERS_LAST_NAME$',  $currentUser->get('last_name') ?? '', $html);
         $html = str_replace('$R_USERS_EMAIL1$',     $currentUser->get('email1') ?? '', $html);
+
+        // Current date in Spanish
+        $dias = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+        $meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+        $now = time();
+        $fechaLarga = $dias[date('w', $now)] . ' ' . date('d', $now) . ' de ' . $meses[date('n', $now) - 1] . ' de ' . date('Y', $now);
+        $html = str_replace('$FECHA_LARGA$', $fechaLarga, $html);
+        $html = str_replace('$FECHA_CORTA$', date('d/m/Y'), $html);
+        $html = str_replace('$FECHA$', date('Y-m-d'), $html);
 
         // 3. Translation Labels %KEY%
         // Replace known labels FIRST with direct str_replace (most reliable)

@@ -278,6 +278,25 @@ Al crear o modificar templates: verificar que `@page` NO contenga `size:`. Esta 
 
 ---
 
+---
+
+## Templates Word (.docx) — Reglas separadas
+
+Los templates Word NO usan mPDF. Las reglas de este documento NO aplican a `.docx`.
+
+| Característica | HTML (PDF) | Word (DOCX) |
+|---|---|---|
+| Renderer | mPDF | PHPWord |
+| Variables | `$VARIABLE$` | `${VARIABLE}` |
+| Imágenes | `$IMG_nombre$` (base64) | Directas en el .docx |
+| Labels | `%MODULO_CAMPO%` | Texto directo |
+| Previsualizar | Sí (iframe) | No |
+| Guardar en Docs | Sí | No |
+| CSS | Limitado (ver reglas arriba) | N/A (formato Word) |
+| Layout | Tablas HTML | Tablas Word |
+
+---
+
 **Documento creado:** Marzo 2026
 **Basado en:** Reconstrucción progresiva v1→v4 del template PDFMaker_Style
 **Versión mPDF:** 8.x (instalada via Composer en raíz de Vtiger)

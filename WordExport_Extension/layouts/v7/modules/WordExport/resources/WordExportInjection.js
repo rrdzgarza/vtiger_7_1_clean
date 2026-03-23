@@ -22,8 +22,8 @@ if (typeof WordExportInitialized === 'undefined') {
 
                 // Button Definition
                 var buttonHtml = '<div class="btn-group">' +
-                    '<button class="btn btn-default" id="WordExportBtn" title="Word Export">' +
-                    '<i class="fa fa-file-word-o"></i> <strong>Word Export</strong>' +
+                    '<button class="btn btn-default" id="WordExportBtn" title="Exportar a PDF/Word">' +
+                    '<i class="fa fa-file-pdf-o"></i> <strong>Exportar a PDF/Word</strong>' +
                     '</button>' +
                     '</div>';
 

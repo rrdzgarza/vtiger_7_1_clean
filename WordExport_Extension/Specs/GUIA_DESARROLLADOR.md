@@ -157,7 +157,32 @@ En `processHtmlTemplate()`, sección 1:
 $html = str_replace('$COMPANY_MICAMPO$', $orgDetails['columna_db'] ?? '', $html);
 ```
 
-### 3.4 Etiqueta de Traducción
+### 3.4 Crear Template Word (.docx)
+
+1. Crear documento en Word/LibreOffice
+2. Guardar como `.docx`
+3. Usar variables con formato `${VARIABLE}` (con llaves, no signos de dólar)
+4. Subir via Administrar Templates
+
+**Variables disponibles en Word** (mismas que HTML pero con formato `${}`):
+```
+${COMPANY_NAME}                → Empresa
+${R_CONTACTID_FIRSTNAME}       → Contacto
+${QUOTES_QUOTE_NO}             → Número cotización
+${SALESORDER_SALESORDER_NO}    → Número pedido
+${R_ACCOUNTID_ACCOUNTNAME}     → Cuenta
+${TOTAL}                       → Total
+${CURRENCYSYMBOL}              → Símbolo moneda
+```
+
+**Diferencias con HTML templates:**
+- Sin `$...$` — usa `${...}` (formato PHPWord)
+- Sin previsualización (Word no se puede mostrar en iframe)
+- Sin guardar en Documentos
+- Sin imágenes `$IMG_*$` (usar imágenes directas en el .docx)
+- Sin `%LABEL%` traducción (usar texto directo)
+
+### 3.5 Etiqueta de Traducción
 En el array `$knownLabels`:
 ```php
 '%G_MI_ETIQUETA%' => 'Mi Traducción',

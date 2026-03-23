@@ -27,13 +27,17 @@ class WordExport_Popup_View extends Vtiger_Popup_View
         $result = $db->pquery($query, array($sourceModule));
         $num_rows = $db->num_rows($result);
 
-        $templates = [];
+        $htmlTemplates = [];
+        $docxTemplates = [];
         for ($i = 0; $i < $num_rows; $i++) {
             $filename = $db->query_result($result, $i, 'filename');
-            $id = $db->query_result($result, $i, 'template_id'); // We might use ID later, staying with filename for now
-
             if (file_exists($templatesDir . $filename)) {
-                $templates[] = $filename;
+                $fileExt = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+                if ($fileExt === 'html') {
+                    $htmlTemplates[] = $filename;
+                } elseif ($fileExt === 'docx') {
+                    $docxTemplates[] = $filename;
+                }
             }
         }
 
@@ -78,7 +82,8 @@ class WordExport_Popup_View extends Vtiger_Popup_View
         $viewer->assign('MODULE', $moduleName);
         $viewer->assign('RECORD', $recordId);
         $viewer->assign('SOURCE_MODULE', $sourceModule);
-        $viewer->assign('TEMPLATES', $templates);
+        $viewer->assign('HTML_TEMPLATES', $htmlTemplates);
+        $viewer->assign('DOCX_TEMPLATES', $docxTemplates);
         $viewer->assign('DEFAULT_FILENAME', $defaultFileName);
 
         echo $viewer->view('Popup.tpl', $moduleName, true);
