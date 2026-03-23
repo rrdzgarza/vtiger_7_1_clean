@@ -1,9 +1,11 @@
 <html>
 
 <head>
-    <title>Sales Order Template</title>
-    <style>
-        /* CSS from User Request - Consolidated */
+    <title></title>
+</head>
+
+<body>
+    <style type="text/css">
         @font-face {
             font-family: SourceSansPro;
             src: url(SourceSansPro-Regular.ttf);
@@ -21,7 +23,7 @@
             text-decoration: none;
         }
 
-        body {
+            {
             color: #555555;
             background: #FFFFFF;
             font-size: 14px;
@@ -92,6 +94,7 @@
         #invoice2 {
             float: right;
             text-align: right;
+
         }
 
         #invoice h1,
@@ -253,43 +256,11 @@
             padding: 0px;
         }
     </style>
-</head>
-
-<body>
-
-    <!-- HEADER -->
-    <table border="0" cellpadding="0" cellspacing="0" class="header" width="100%">
-        <tbody>
-            <tr>
-                <td align="left" valign="top">$COMPANY_LOGO$</td>
-                <td align="right" nowrap="nowrap" valign="top">
-                    <p><strong style="text-align: -webkit-right; white-space: nowrap;"><span
-                                style="font-size: 12px;">Zona&nbsp;</span></strong><span
-                            style="text-align: -webkit-right; white-space: nowrap; font-family: Verdana; font-size: 10px;"><strong><span
-                                    style="font-size: 12px;">$R_ACCOUNTID_CF_852$</span></strong>&nbsp; &nbsp; &nbsp;
-                            &nbsp; &nbsp; <strong><span
-                                    style="font-size: 12px;">$USERS_FIRST_NAME$&nbsp;$USERS_LAST_NAME$</span></strong>&nbsp;
-                            &nbsp; &nbsp; &nbsp; &nbsp; <strong><span
-                                    style="font-size: 12px;">$R_POTENTIALID_CF_984$&nbsp; &nbsp; &nbsp; &nbsp;
-                                </span></strong></span><strong>$R_POTENTIALID_CF_890$</strong><span
-                            style="text-align: -webkit-right; white-space: nowrap; font-family: Verdana; font-size: 10px;"><strong><span
-                                    style="font-size: 12px;">&nbsp; &nbsp; &nbsp; &nbsp;
-                                    &nbsp;</span></strong></span><span
-                            style="color: rgb(0, 0, 0); font-family: Verdana; font-size: x-large; font-weight: bold;">$SALESORDER_SALESORDER_NO$</span>
-                    </p>
-                    <span style="font-family: Verdana; font-size: 10px;">&nbsp;&nbsp;</span><br />
-                    <span style="font-size:10px;">$SALESORDER_MODIFIEDTIME$.&nbsp; &nbsp; &nbsp;
-                        <strong>&nbsp;&nbsp;</strong></span><strong>$SALESORDER_SOSTATUS$&nbsp;&nbsp;</strong>$R_ACCOUNTID_INDUSTRY$
-                </td>
-            </tr>
-        </tbody>
-    </table>
-
-    <!-- BODY -->
     <div id="details">
         <div id="client2">
-            <p style="color: rgb(0, 0, 0); font-family: Verdana; font-size: medium;"><span
-                    style="font-size:12px;"><strong>$R_ACCOUNTID_CF_956$</strong></span></p>
+            <p
+                style="color: rgb(0, 0, 0); font-family: Verdana; font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-style: initial; text-decoration-color: initial;">
+                <span style="font-size:12px;"><strong>$R_ACCOUNTID_CF_956$</strong></span></p>
             <span style="font-size:10px;"><span
                     style="font-family: verdana, geneva, sans-serif;"><strong>RFC</strong>:&nbsp;</span>$R_ACCOUNTID_SICCODE$<br />
                 $SALESORDER_BILL_STREET$<br />
@@ -331,8 +302,9 @@
 
         <div id="invoice2">
             <div class="info">
-                <p style="color: rgb(0, 0, 0); font-family: Verdana; font-size: medium;"><span
-                        style="font-size:10px;"><span
+                <p
+                    style="color: rgb(0, 0, 0); font-family: Verdana; font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-style: initial; text-decoration-color: initial;">
+                    <span style="font-size:10px;"><span
                             style="font-weight: bold;">Cotizaci&oacute;n:&nbsp;</span>$R_QUOTEID_QUOTE_NO$</span><br />
                     <span style="font-size:10px;">$USERS_EMAIL1$</span><br />
                     <br />
@@ -341,8 +313,9 @@
                     <strong style="font-size: 10px;">%SALESORDER_SHIP_STREET%</strong>
                 </p>
 
-                <p style="color: rgb(0, 0, 0); font-family: Verdana; font-size: medium;"><span
-                        style="font-size:10px;">$SALESORDER_ACCOUNT_ID$<br />
+                <p
+                    style="color: rgb(0, 0, 0); font-family: Verdana; font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-style: initial; text-decoration-color: initial;">
+                    <span style="font-size:10px;">$SALESORDER_ACCOUNT_ID$<br />
                         $SALESORDER_SHIP_STREET$<br />
                         $SALESORDER_SHIP_CODE$<br />
                         $SALESORDER_SHIP_CITY$<br />
@@ -367,6 +340,7 @@
                 </p>
             </div>
         </div>
+
         <p></p>
     </div>
 
@@ -396,8 +370,10 @@
             </tr>
         </thead>
         <tbody>
-            <!-- PRODUCT START -->
-            #PRODUCTBLOC_START#
+            <tr>
+                <td colspan="5"><span style="font-size:10px;"><span
+                            style="font-family:verdana,geneva,sans-serif;">#PRODUCTBLOC_START#</span></span></td>
+            </tr>
             <tr>
                 <td style="background:#BDB9B9;border-bottom:2px solid white"><span style="font-size:10px;"><span
                             style="font-family:verdana,geneva,sans-serif;">$PRODUCTPOSITION$</span></span></td>
@@ -422,9 +398,10 @@
                             style="font-family:verdana,geneva,sans-serif;"><strong>$PRODUCTSTOTALAFTERDISCOUNT$
                                 $CURRENCYSYMBOL$</strong></span></span></td>
             </tr>
-            #PRODUCTBLOC_END#
-            <!-- PRODUCT END -->
-
+            <tr>
+                <td colspan="5"><span style="font-size:10px;"><span
+                            style="font-family:verdana,geneva,sans-serif;">#PRODUCTBLOC_END#</span></span></td>
+            </tr>
             <tr>
                 <td colspan="5" style="background:white"></td>
             </tr>
@@ -455,7 +432,8 @@
             <tr>
                 <td colspan="4" style="background:white; border-bottom:2px solid #BDB9B9"><span
                         style="font-size:10px;"><span style="font-family:verdana,geneva,sans-serif;">%G_Tax%
-                            $VATPERCENT$%</span></span><br />&nbsp;</td>
+                            $VATPERCENT$%</span></span><br />
+                    &nbsp;</td>
                 <td style="background:#BDB9B9;;border-bottom:2px solid #BDB9B9"><span style="font-size:10px;"><span
                             style="font-family:verdana,geneva,sans-serif;">$VAT$ $CURRENCYSYMBOL$</span></span></td>
             </tr>
@@ -475,9 +453,12 @@
             %SALESORDER_CF_1177%:&nbsp;$SALESORDER_CF_1177$<br />
             $SALESORDER_DESCRIPTION$</div>
 
-        <div id="invoice"><br /><br /><br /><br /><span
-                style="font-family:verdana,geneva,sans-serif;">____________________________</span><br />
-            $R_USERS_FIRST_NAME$ $R_USERS_LAST_NAME$<br />
+        <div id="invoice"><br />
+            <br />
+            <br />
+            <br />
+            <span style="font-family:verdana,geneva,sans-serif;">____________________________</span><br />
+            $R_USERS_FIRST_NAME$​ $R_USERS_LAST_NAME$​<br />
             <br />
             <br />
             <br />
@@ -492,18 +473,6 @@
             &nbsp;
         </div>
     </div>
-
-    <!-- FOOTER -->
-    <table border="0" cellpadding="0" cellspacing="0" class="footer" width="100%">
-        <tbody>
-            <tr>
-                <td align="center" valign="bottom"><span style="font-size:10px;">$COMPANY_NAME$ <small>&bull;
-                        </small>$COMPANY_ADDRESS$ <small>&bull; </small> $COMPANY_ZIP$<small>
-                        </small>$COMPANY_CITY$<small> &bull; </small>$COMPANY_STATE$</span></td>
-            </tr>
-        </tbody>
-    </table>
-
 </body>
 
 </html>

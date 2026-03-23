@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Pedido de Venta</title>
+    <style type="text/css">
+        @page {
+            /* NO usar size: letter — tamaño definido en constructor PHP */
+            margin-top: 35mm;
+            margin-bottom: 20mm;
+            margin-left: 15mm;
+            margin-right: 15mm;
+            header: html_myHeader;
+            footer: html_myFooter;
+        }
+
+        body {
+            color: black;
+            background: #FFFFFF;
+            font-size: 10px;
+            font-family: sans-serif;
+        }
+
+        .header,
+        .header td {
+            background-color: #FFFFFF;
+            border: none;
+            border-bottom: 1px solid #AAAAAA;
+            margin: 0px;
+            padding: 0px;
+        }
+
+        #details {
+            width: 180mm;
+            margin-bottom: 5px;
+            padding-top: 5px;
+        }
+
+        #client2 {
+            width: 110mm;
+            float: left;
+            font-size: 10px;
+            padding-left: 6px;
+            border-left: 6px solid #BDB9B9;
+            margin-top: 3px;
+        }
+
+        #invoice {
+            width: 60mm;
+            float: right;
+            text-align: right;
+            font-size: 10px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ==================== HEADER (de SalesOrder_Header.html) ==================== -->
+    <htmlpageheader name="myHeader" style="display:none">
+        <table border="0" cellpadding="0" cellspacing="0" class="header" width="180mm" style="margin: 0; padding: 0;">
+            <tr>
+                <td width="40mm" valign="top" style="padding: 0 0 3px 0;">
+                    $IMG_Logo_AAS|30mm$
+                </td>
+                <td width="50mm" valign="top" style="padding: 0 0 3px 3px; text-align: center;">
+                    <br />
+                    <br />
+                    <span style="font-family: Verdana; font-size: 10px;">
+                        <strong><span style="font-size: 12px;">Zona&nbsp;</span></strong>
+                        <strong><span style="font-size: 12px;">$R_ACCOUNTID_CF_852$</span></strong><br /><br />
+                        <strong><span style="font-size: 12px;">$USERS_FIRST_NAME$&nbsp;$USERS_LAST_NAME$</span></strong>
+                    </span>
+                </td>
+                <td width="40mm" valign="top" style="padding: 0 0 3px 3px; text-align: right;">
+                    <br />
+                    <span
+                        style="font-family: Verdana; font-size: 16px; padding-top: 10px;"><strong>$R_POTENTIALID_CF_890$</strong></span>
+                    <br />
+                    <br />
+                    <span style="font-family: Verdana; font-size: 12px;">
+                        <strong>$R_POTENTIALID_CF_984$</strong>
+                    </span>
+                    <br />
+                    <span style="font-family: Verdana; font-size: 12px;">$R_ACCOUNTID_INDUSTRY$</span>
+                </td>
+                <td width="50mm" valign="top" style="padding: 0 0 3px 3px; text-align: right;">
+                    <span style="font-family: Verdana; font-size: 10px;">
+                        <strong><span style="font-size: 12px;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</span></strong>
+                    </span>
+                    <span
+                        style="font-family: Verdana; font-size: 28px; font-weight: bold;">$SALESORDER_SALESORDER_NO$</span>
+                    <br />
+                    <br />
+                    <span style="font-family: Verdana; font-size: 12px;"><strong>$SALESORDER_SOSTATUS$</strong></span>
+                    <br />
+                    <span style="font-family: Verdana; font-size: 12px;">$SALESORDER_MODIFIEDTIME$.
+                </td>
+            </tr>
+        </table>
+    </htmlpageheader>
+
+    <!-- ==================== FOOTER (de SalesOrder_Footer.html) ==================== -->
+    <htmlpagefooter name="myFooter" style="display:none">
+        <table border="0" cellpadding="2" cellspacing="0" width="180mm"
+            style="margin: 0; padding: 0; border-collapse: collapse; border-top: 1px solid #AAAAAA;">
+            <tr>
+                <td width="160mm" style="padding: 4px 0; text-align: left; font-size: 10px; border: none;">
+                    $COMPANY_NAME$ &bull; $COMPANY_ADDRESS$ &bull; $COMPANY_ZIP$ $COMPANY_CITY$ &bull; $COMPANY_STATE$
+                </td>
+                <td width="20mm" style="padding: 4px 0; text-align: right; font-size: 10px; border: none;"><strong><span
+                            style="font-size:12px;"><span
+                                style="font-family: Verdana;">VEN-04-F/1</span></span></strong>
+                </td>
+            </tr>
+        </table>
+    </htmlpagefooter>
+
+    <!-- ==================== BODY (de SalesOrder_Body.html) ==================== -->
+    <!-- Datos Facturación / Envío — tabla en lugar de floats -->
+    <table width="180mm" border="0" cellpadding="0" cellspacing="0" style="margin-bottom: 5px; padding-top: 5px;">
+        <tr>
+            <!-- COLUMNA IZQUIERDA: client2 -->
+            <td width="110mm" valign="top"
+                style="padding-right: 3mm; font-size: 10px; padding-left: 6px; border-left: 6px solid #BDB9B9;">
+                <p style="color: rgb(0, 0, 0); font-family: Verdana; font-size: medium;">
+                    <span style="font-size:12px;"><strong>$R_ACCOUNTID_CF_956$</strong></span>
+                </p> <br />
+                <span style="font-size:10px;"><span
+                        style="font-family: verdana, geneva, sans-serif;"><strong>RFC</strong>:&nbsp;</span>$R_ACCOUNTID_SICCODE$<br />
+                    $SALESORDER_BILL_STREET$<br />
+                    $R_ACCOUNTID_BILL_POBOX$</span><br />
+                <span style="font-size:10px;">$SALESORDER_BILL_CODE$ $SALESORDER_BILL_CITY$<br />
+                    $SALESORDER_BILL_STATE$<br />
+                    $SALESORDER_BILL_COUNTRY$<br />
+                    $R_ACCOUNTID_PHONE$</span><br />
+                <br />
+                <strong style="font-size: 14px;">Datos de Facturaci&oacute;n:</strong><br />
+                <br />
+                <span style="font-size: 10px;"><strong>Condici&oacute;n de pago:</strong> $SALESORDER_CF_932$
+                    -&nbsp;$SALESORDER_CF_960$</span><br />
+                <strong style="font-size: 10px;">M&eacute;todo de pago</strong><span style="font-size: 10px;">:
+                    $SALESORDER_CF_934$&nbsp;</span><strong style="font-size: 10px;">Forma de pago</strong><span
+                    style="font-size: 10px;">: $SALESORDER_CF_938$</span><br />
+                <strong style="font-size: 10px;">Uso de CFDI</strong><span style="font-size: 10px;">:
+                    $SALESORDER_CF_940$</span><br />
+                <span style="font-size:10px;"><strong>Nombre, Tel&eacute;fono y
+                        Correo</strong>:&nbsp;$R_ACCOUNTID_CF_856$ $R_ACCOUNTID_CF_1163$<br />
+                    <br />
+                    <span style="font-size:14px;"><strong>Contacto para Pago:</strong></span><br /><br />
+                    <span style="font-size:10px;">$R_ACCOUNTID_CF_1161$<br />
+                        Portal:&nbsp;$R_ACCOUNTID_CF_854$<br />
+                        #Prov:&nbsp;$R_ACCOUNTID_CF_986$</span><br />
+                    <br />
+                    <strong><span style="font-size:10px;">Contacto Aviso de embarque : (Nombre, Correo y
+                            Tel&eacute;fono) :&nbsp;</span></strong><br />
+                    <span style="font-size: 10px;">$SALESORDER_CF_1179$</span>&nbsp;<br /><br />
+
+                    <strong><span style="font-size: 10px;">Contacto Evaluación de Satisfacción (Nombre, Correo y
+                            Tel&eacute;fono)</span><br /></strong><span style="font-size: 10px;"><span
+                            style="font-family: Verdana;"><strong>:&nbsp;</strong></span>$R_POTENTIALID_CF_1159$</span><br /><br /><br />
+            </td>
+
+            <!-- COLUMNA DERECHA: invoice2 -->
+            <td width="70mm" valign="top" style="padding-left: 3mm; font-size: 10px; text-align: left;">
+                <p style="color: rgb(0, 0, 0); font-family: Verdana; font-size: medium;">
+                    <span style="font-size:10px;"><span
+                            style="font-weight: bold;">Cotizaci&oacute;n:&nbsp;</span>$R_QUOTEID_QUOTE_NO$</span><br />
+                    <span style="font-size:10px;">$USERS_EMAIL1$</span><br />
+                    <br />
+                    <span
+                        style="font-family: Verdana; font-size: 10px;">INCOTERMS:&nbsp;<strong>$SALESORDER_CF_948$</strong></span><br /><br />
+                    <strong style="font-size: 10px;">Direcci&oacute;n de Env&iacute;o:</strong>
+                </p>
+                <p style="color: rgb(0, 0, 0); font-family: Verdana; font-size: medium;">
+                    <span style="font-size:10px;">$SALESORDER_ACCOUNT_NAME$<br />
+                        $SALESORDER_SHIP_STREET$<br />
+                        $SALESORDER_SHIP_CODE$<br />
+                        $SALESORDER_SHIP_CITY$<br />
+                        $SALESORDER_SHIP_STATE$<br />
+                        $SALESORDER_SHIP_COUNTRY$<br />
+                        <br />
+                        <strong>Tiempo de
+                            Entrega:&nbsp;</strong>$SALESORDER_CF_946$&nbsp;$SALESORDER_CF_1055$</span><br />
+                    <br />
+                    <span style="font-size:10px;"><strong>O.C. Cliente:</strong>&nbsp;$SALESORDER_CF_988$ -
+                        $SALESORDER_CF_1000$<br />
+                        Recepci&oacute;n:&nbsp;$SALESORDER_CF_1002$<br />
+                        F. Entrega solicitada:&nbsp;$SALESORDER_CF_1059$</span><br />
+                    <br />
+                    <span style="font-size:10px;">Req. Instalaci&oacute;n:&nbsp;<sapn style="font-size:12px;">
+                            <strong>$SALESORDER_CF_1006$</strong></span><br />
+                    <span style="font-size:10px;">F. Instalaci&oacute;n:&nbsp;$SALESORDER_CF_1010$</span><br />
+                    <span style="font-size: 10px;">Voltaje:&nbsp;$SALESORDER_CF_930$</span><br />
+                    <br />
+                    <strong style="font-size: 10px;">R.Comercial:&nbsp;</strong><span
+                        style="font-size: 10px;">$SALESORDER_CF_942$&nbsp;</span><br />
+                    <strong style="font-size: 10px;">R.Técnico:</strong><span
+                        style="font-size: 10px;">&nbsp;$SALESORDER_CF_944$</span>
+                </p>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Tabla de Productos -->
+    <table border="0" width="180mm" cellpadding="0" cellspacing="0"
+        style="font-size:10px; border-collapse: collapse; margin-bottom: 20px;">
+        <colgroup>
+            <col width="9mm" />
+            <col width="25mm" />
+            <col width="72mm" />
+            <col width="23mm" />
+            <col width="18mm" />
+            <col width="33mm" />
+        </colgroup>
+        <thead>
+            <tr>
+                <th width="9mm"
+                    style="text-align: center;color: #000;font-weight: 600;background:#BDB9B9; border-bottom:2px solid white; padding: 2px; ">
+                </th>
+                <th width="25mm"
+                    style="text-align: left;color: #000;font-weight: 600;background:#BDB9B9; border-bottom:2px solid white; padding: 2px;  border-right:2px solid white">
+                    <span style="font-family:verdana,geneva,sans-serif;"><strong>Num Parte</strong></span>
+                </th>
+                <th width="72mm"
+                    style="text-align: left;color: #000;font-weight: 600;background:#BDB9B9; border-bottom:2px solid white; padding: 2px;  border-right:2px solid white">
+                    <span style="font-family:verdana,geneva,sans-serif;"><strong>%G_Description%</strong></span>
+                </th>
+                <th width="23mm"
+                    style="text-align: center;color: #000;font-weight: 600;background:#BDB9B9; border-bottom:2px solid white; padding: 2px;  border-right:2px solid white">
+                    <span style="font-family:verdana,geneva,sans-serif;"><strong>%G_List Price%</strong></span>
+                </th>
+                <th width="18mm"
+                    style="text-align: center;color: #000;font-weight: 600;background:#BDB9B9; border-bottom:2px solid white; padding: 2px;  border-right:2px solid white">
+                    <span style="font-family:verdana,geneva,sans-serif;"><strong>Cant</strong></span>
+                </th>
+                <th width="33mm"
+                    style="text-align: center;color: #000;font-weight: 600;background:#BDB9B9; border-bottom:2px solid white; padding: 2px;">
+                    <span style="font-family:verdana,geneva,sans-serif;"><strong>%G_Total%</strong></span>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td colspan="6"><span style="background: white;"><span>
+                </td>
+            </tr>
+            #PRODUCTBLOC_START#
+            <tr>
+                <td width="9mm"
+                    style="background:#BDB9B9;border-bottom:2px solid white; padding: 2px; text-align: center; background:#BDB9B9;">
+                    <span style="font-family:verdana,geneva,sans-serif;">$PRODUCTPOSITION$</span>
+                </td>
+                <td width="25mm"
+                    style="text-align:left; border-bottom:2px solid white;border-right:2px solid white; padding: 2px; background:#EEEEEE;">
+                    <strong>$PRODUCTS_PRODUCTCODE$</strong>
+                </td>
+                <td width="72mm"
+                    style="text-align:left; border-bottom:2px solid white;border-right:2px solid white; padding: 5px; background:#EEEEEE;">
+                    <strong>$PRODUCTTITLE$</strong><br />
+                    <strong>$PRODUCTEDITDESCRIPTION$</strong>
+                </td>
+                <td width="23mm"
+                    style="border-right:2px solid white;border-bottom:2px solid white; padding: 5px; text-align: right; background:#EEEEEE;">
+                    <span style="font-family:verdana,geneva,sans-serif;">$CURRENCYSYMBOL$ $PRODUCTLISTPRICE$</span>
+                </td>
+                <td width="18mm"
+                    style="border-right:2px solid white;border-bottom:2px solid white; padding: 5px; text-align: center; background:#EEEEEE;">
+                    <span style="font-family:verdana,geneva,sans-serif;">$PRODUCTQUANTITY$</span>
+                </td>
+                <td width="33mm"
+                    style="border-bottom:2px solid white; padding: 5px; text-align: right; background:#EEEEEE;">
+                    <span style="font-family:verdana,geneva,sans-serif;"><strong>$CURRENCYSYMBOL$
+                            $PRODUCTSTOTALAFTERDISCOUNT$</strong></span>
+                </td>
+            </tr>
+            #PRODUCTBLOC_END#
+            <tr>
+                <td colspan="3"></td>
+                <td colspan="2"
+                    style="background:white; border-bottom:1px solid #BDB9B9; padding: 5px; text-align: right;">
+                    <span style="font-family:verdana,geneva,sans-serif;">%G_Subtotal%</span>
+                </td>
+                <td style="background:#EEEEEE; border-bottom:1px solid #BDB9B9; padding: 5px; text-align: right;">
+                    <span style="font-family:verdana,geneva,sans-serif;">$CURRENCYSYMBOL$ $TOTALWITHOUTVAT$</span>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="3"></td>
+                <td colspan="2"
+                    style="background:white; border-bottom:1px solid #BDB9B9; padding: 5px; text-align: right;">
+                    <span style="font-family:verdana,geneva,sans-serif;">%G_LBL_DISCOUNT%</span>
+                </td>
+                <td style="background:#EEEEEE; border-bottom:1px solid #BDB9B9; padding: 5px; text-align: right;">
+                    <span style="font-family:verdana,geneva,sans-serif;">$CURRENCYSYMBOL$ $TOTALDISCOUNT$</span>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="3"></td>
+                <td colspan="2"
+                    style="background:white; border-bottom:2px solid #BDB9B9; padding: 5px; text-align: right;">
+                    <span style="font-family:verdana,geneva,sans-serif;">%G_Tax% $VATPERCENT$%</span>
+                </td>
+                <td style="background:#EEEEEE;border-bottom:2px solid #BDB9B9; padding: 5px; text-align: right;">
+                    <span style="font-family:verdana,geneva,sans-serif;">$CURRENCYSYMBOL$ $VAT$</span>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="3"></td>
+                <td colspan="2" style="background:white; padding: 8px; text-align: right;">
+                    <strong>&nbsp;&nbsp;&nbsp;&nbsp;%G_LBL_GRAND_TOTAL%.&nbsp; <span
+                            style="font-size:14px;">(</span></strong><span
+                        style="font-size:14px;">$CURRENCYNAME$)<strong>&nbsp;</strong></span>
+                </td>
+                <td style="background:white; padding: 8px; text-align: right;">
+                    <span style="font-size:14px;font-family:verdana,geneva,sans-serif;"><strong>$CURRENCYSYMBOL$
+                            $TOTAL$</strong></span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <!-- Notas y Firma (div que fluye entre páginas, como PDFMaker original) -->
+
+
+
+    <div id="details">
+        <div id="client2">%SALESORDER_CF_1175% : $SALESORDER_CF_1175$<br />
+            %SALESORDER_CF_1177%:&nbsp;$SALESORDER_CF_1177$<br /><br />
+            $SALESORDER_DESCRIPTION$</div>
+
+        <div id="invoice"><br />
+            <br />
+            <br />
+            <br />
+            <span
+                style="font-family:verdana,geneva,sans-serif;font-size:16px;">____________________________</span><br />
+            $R_USERS_FIRST_NAME$​ $R_USERS_LAST_NAME$​<br />
+            <br />
+        </div>
+    </div>
+
+</body>
+
+</html>

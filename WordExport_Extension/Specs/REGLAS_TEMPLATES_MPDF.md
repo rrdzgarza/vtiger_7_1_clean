@@ -208,6 +208,45 @@ table.items tfoot .grand-total { ... }
 </html>
 ```
 
+### Anchos de columna en tablas de productos
+mPDF ignora `table-layout: fixed`, `<colgroup>` y `width` en CSS style por sí solos.
+La **única forma confiable** de forzar anchos fijos es usar el **atributo HTML `width`** en las tres capas:
+
+```html
+<table width="180mm">
+    <colgroup>
+        <col width="9mm" />
+        <col width="25mm" />
+        <col width="72mm" />
+        ...
+    </colgroup>
+    <thead>
+        <tr>
+            <th width="9mm">...</th>
+            <th width="25mm">...</th>
+            <th width="72mm">...</th>
+            ...
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td width="9mm">...</td>
+            <td width="25mm">...</td>
+            <td width="72mm">Texto largo se ajusta en múltiples renglones</td>
+            ...
+        </tr>
+    </tbody>
+</table>
+```
+
+**Lo que NO funciona solo:**
+- `style="width:72mm"` en CSS → mPDF lo ignora si el contenido es más ancho
+- `table-layout: fixed` → no se respeta en mPDF
+- `<colgroup>` solo → no es suficiente sin `width` en `<th>` y `<td>`
+- `word-wrap: break-word` solo → no fuerza el ancho
+
+**Lo que SÍ funciona:** atributo HTML `width="72mm"` en `<col>` + `<th>` + `<td>` simultáneamente.
+
 ### Reglas obligatorias
 - [ ] Sin `size:` en `@page`
 - [ ] Todas las tablas con ancho en mm (180mm para márgenes 15mm)

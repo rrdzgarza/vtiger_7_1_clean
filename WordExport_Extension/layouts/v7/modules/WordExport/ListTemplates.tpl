@@ -47,9 +47,11 @@
                     <td>{$TEMPLATE.size}</td>
                     <td>{$TEMPLATE.createdtime}</td>
                     <td>
-                        <a href="index.php?module=WordExport&action=FileAction&mode=delete&id={$TEMPLATE.id}" 
-                           onclick="return confirm('Are you sure you want to delete this template?');" 
-                           class="text-danger">Delete</a>
+                        <a href="index.php?module=WordExport&action=FileAction&mode=download&id={$TEMPLATE.id}"
+                           class="text-primary" style="margin-right: 10px;"><i class="fa fa-download"></i> Download</a>
+                        <a href="index.php?module=WordExport&action=FileAction&mode=delete&id={$TEMPLATE.id}"
+                           onclick="return confirm('Are you sure you want to delete this template?');"
+                           class="text-danger"><i class="fa fa-trash"></i> Delete</a>
                     </td>
                 </tr>
                 {/foreach}

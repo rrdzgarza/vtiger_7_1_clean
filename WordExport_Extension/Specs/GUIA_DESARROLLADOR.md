@@ -86,20 +86,30 @@ foreach ($data as $key => $value) {
     $html = str_replace('$' . strtoupper($moduleName) . '_' . strtoupper($key) . '$', $displayValue, $html);
 }
 ```
-> ✅ Acepta `null`, `int`, `float`, `string` — no solo strings.
-> Los `cf_XXX` se resuelven automáticamente como `$QUOTES_CF_XXX$`.
+> ✅ Usa `getDisplayValue()` para formato correcto (checkboxes→Sí/No, picklists→label).
+> Los `cf_XXX` se resuelven automáticamente como `$QUOTES_CF_XXX$` o `$SALESORDER_CF_XXX$`.
 
 ### 2.3 Campos Relacionados `$R_*$`
-**CRÍTICO:** Resolver manualmente PRIMERO, luego limpiar sobrantes con regex.
+Se resuelven **dinámicamente** con loop sobre `getData()` de cada registro relacionado:
 ```php
-// 1. Resolver conocidos
-$html = str_replace('$R_CONTACTID_FIRSTNAME$', $contactModel->get('firstname') ?? '', $html);
-// ... más campos ...
+// Contact — resuelve TODOS los campos automáticamente
+$contactData = $contactModel->getData();
+foreach ($contactData as $cKey => $cVal) {
+    $html = str_replace('$R_CONTACTID_' . strtoupper($cKey) . '$', ...);
+}
+// Igual para Account ($R_ACCOUNTID_*$), Potential ($R_POTENTIALID_*$), Quote ($R_QUOTEID_*$)
 
-// 2. Limpiar no resueltos (AL FINAL)
+// Limpiar no resueltos AL FINAL
 $html = preg_replace('/\$R_[A-Z0-9_]+\$/', '', $html);
 ```
-> ⚠️ Si el regex limpia ANTES del reemplazo manual, todos los `$R_*$` quedan vacíos.
+
+### 2.3.1 Usuarios
+```php
+// $USERS_*$ = usuario asignado al registro
+// $R_USERS_*$ = usuario logueado (quien genera el PDF)
+$currentUser = Users_Record_Model::getCurrentUserModel();
+$html = str_replace('$R_USERS_FIRST_NAME$', $currentUser->get('first_name'), $html);
+```
 
 ### 2.4 Etiquetas `%G_%`
 ```php
@@ -111,8 +121,9 @@ $knownLabels = [
 ];
 $html = str_replace(array_keys($knownLabels), array_values($knownLabels), $html);
 
-// Paso 2: preg_replace_callback para el resto
-$html = preg_replace_callback('/%([^%]+)%/', function($matches) { ... }, $html);
+// Paso 2: preg_replace_callback para el resto (NOTA: regex solo alfanuméricos)
+$html = preg_replace_callback('/%([A-Za-z0-9_ ]+)%/', function($matches) { ... }, $html);
+// ⚠️ NUNCA usar /%([^%]+)%/ — captura HTML entre % literales (ej: $VATPERCENT$%...%CF_1175%)
 ```
 > ⚠️ El str_replace DEBE ir antes del preg_replace_callback, si no vtranslate puede
 > reemplazar con string vacío y el fallback final ya no encuentra el tag.
@@ -255,6 +266,7 @@ $html = str_replace('$MI_VARIABLE$', $valor, $html);
 - Ancho fijo en mm para TODAS las tablas (180mm para Letter con márgenes 15mm)
 - `width` y `height` directamente en `<img>` o `<td>` para imágenes
 - El tamaño de página se define en el **constructor** de mPDF (`'format' => 'Letter'`), NO en CSS
+- Anchos de columna en tablas: usar atributo HTML `width` en `<col>` + `<th>` + `<td>` simultáneamente (las 3 capas). CSS `style="width:"` y `table-layout:fixed` NO funcionan solos
 
 ❌ **Evitar — causan loops infinitos o páginas en blanco:**
 - `@page { size: letter; }` → **NO USAR** — causa renderizado de 1 carácter por página. El tamaño se define en el constructor PHP
@@ -370,5 +382,5 @@ docker exec -it <CONTAINER> tail -f /var/log/apache2/error.log | grep WordExport
 
 ---
 
-**Guía del Desarrollador v1.1**
+**Guía del Desarrollador v1.2**
 WordExport Extension - Vtiger CRM 7.1

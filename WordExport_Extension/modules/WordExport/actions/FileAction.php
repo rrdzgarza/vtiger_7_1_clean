@@ -24,6 +24,9 @@ class WordExport_FileAction_Action extends Vtiger_Action_Controller
             $this->uploadFile($request);
         } else if ($mode === 'delete') {
             $this->deleteFile($request);
+        } else if ($mode === 'download') {
+            $this->downloadFile($request);
+            return; // download sends headers, no redirect
         }
 
         // Redirect back to List
@@ -55,6 +58,28 @@ class WordExport_FileAction_Action extends Vtiger_Action_Controller
                     "INSERT INTO vtiger_wordexport_templates (module_name, filename, createdtime) VALUES (?, ?, NOW())",
                     array($targetModule, $cleanName)
                 );
+            }
+        }
+    }
+
+    private function downloadFile(Vtiger_Request $request)
+    {
+        $id = $request->get('id');
+        if ($id) {
+            $db = PearDatabase::getInstance();
+            $result = $db->pquery("SELECT filename FROM vtiger_wordexport_templates WHERE template_id = ?", array($id));
+            if ($db->num_rows($result)) {
+                $filename = $db->query_result($result, 0, 'filename');
+                $filePath = vglobal('root_directory') . 'modules/WordExport/templates/' . $filename;
+
+                if (file_exists($filePath)) {
+                    if (ob_get_length()) ob_clean();
+                    header('Content-Type: application/octet-stream');
+                    header('Content-Disposition: attachment; filename="' . $filename . '"');
+                    header('Content-Length: ' . filesize($filePath));
+                    readfile($filePath);
+                    exit;
+                }
             }
         }
     }

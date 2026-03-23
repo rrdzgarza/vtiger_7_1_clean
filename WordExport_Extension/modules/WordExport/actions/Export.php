@@ -239,9 +239,17 @@ class WordExport_Export_Action extends Vtiger_Action_Controller
 
         // 2. Current User Information
         $userModel = Vtiger_Record_Model::getInstanceById($recordModel->get('assigned_user_id'), 'Users');
-        $html = str_replace('$USERS_FIRST_NAME$', $userModel->get('first_name'), $html);
-        $html = str_replace('$USERS_LAST_NAME$', $userModel->get('last_name'), $html);
-        $html = str_replace('$USERS_EMAIL1$', $userModel->get('email1'), $html);
+        $uFirstName = $userModel->get('first_name') ?? '';
+        $uLastName  = $userModel->get('last_name') ?? '';
+        $uEmail     = $userModel->get('email1') ?? '';
+        $html = str_replace('$USERS_FIRST_NAME$', $uFirstName, $html);
+        $html = str_replace('$USERS_LAST_NAME$',  $uLastName, $html);
+        $html = str_replace('$USERS_EMAIL1$',      $uEmail, $html);
+        // $R_USERS_*$ = current logged-in user (who generates the PDF)
+        $currentUser = Users_Record_Model::getCurrentUserModel();
+        $html = str_replace('$R_USERS_FIRST_NAME$', $currentUser->get('first_name') ?? '', $html);
+        $html = str_replace('$R_USERS_LAST_NAME$',  $currentUser->get('last_name') ?? '', $html);
+        $html = str_replace('$R_USERS_EMAIL1$',     $currentUser->get('email1') ?? '', $html);
 
         // 3. Translation Labels %KEY%
         // Replace known labels FIRST with direct str_replace (most reliable)
@@ -268,7 +276,7 @@ class WordExport_Export_Action extends Vtiger_Action_Controller
             'LBL_GRAND_TOTAL' => 'Total a Pagar'
         );
 
-        $html = preg_replace_callback('/%([^%]+)%/', function ($matches) use ($moduleName, $labelTranslations) {
+        $html = preg_replace_callback('/%([A-Za-z0-9_ ]+)%/', function ($matches) use ($moduleName, $labelTranslations) {
             $key = trim($matches[1]);
             $transModule = $moduleName;
             $isGlobalLabel = false;
@@ -282,15 +290,65 @@ class WordExport_Export_Action extends Vtiger_Action_Controller
                 $transModule = 'Vtiger';
                 $isGlobalLabel = true;
             } elseif ($prefix === 'R_') {
-                // Related field tag (e.g., R_ACCOUNTID_CF_856).
-                // Since locating the precise related module dynamically is complex here,
-                // falling back to Vtiger global dictionary is the safest approach for labels.
                 $transModule = 'Vtiger';
             }
 
             // For global labels, use fallback dictionary first
             if ($isGlobalLabel && isset($labelTranslations[$key])) {
                 return $labelTranslations[$key];
+            }
+
+            // Handle %MODULENAME_FIELDNAME% → resolve to field label via DB query
+            // e.g., %SALESORDER_CF_1175% → label of cf_1175 in SalesOrder module
+            $moduleMap = array(
+                'SALESORDER'    => 'SalesOrder',
+                'QUOTES'        => 'Quotes',
+                'INVOICE'       => 'Invoice',
+                'PURCHASEORDER' => 'PurchaseOrder',
+            );
+            foreach ($moduleMap as $modPrefix => $modName) {
+                if (strpos($key, $modPrefix . '_') === 0) {
+                    $fieldName = strtolower(substr($key, strlen($modPrefix) + 1));
+                    try {
+                        $db = PearDatabase::getInstance();
+                        $res = $db->pquery(
+                            "SELECT fieldlabel FROM vtiger_field WHERE columnname = ? AND tabid = (SELECT tabid FROM vtiger_tab WHERE name = ?)",
+                            [$fieldName, $modName]
+                        );
+                        if ($db->num_rows($res) > 0) {
+                            return $db->query_result($res, 0, 'fieldlabel');
+                        }
+                    } catch (\Exception $e) {}
+                    return $fieldName;
+                }
+            }
+
+            // Also handle %R_MODULEID_FIELDNAME% for related field labels
+            if (strpos($key, 'R_') === 0) {
+                $relParts = explode('_', substr($key, 2), 2);
+                if (count($relParts) === 2) {
+                    $relIdField = strtolower($relParts[0]);
+                    $relFieldName = strtolower($relParts[1]);
+                    $relModuleMap = array(
+                        'accountid'   => 'Accounts',
+                        'contactid'   => 'Contacts',
+                        'potentialid' => 'Potentials',
+                        'quoteid'     => 'Quotes',
+                    );
+                    $relModule = $relModuleMap[$relIdField] ?? null;
+                    if ($relModule) {
+                        try {
+                            $db = PearDatabase::getInstance();
+                            $res = $db->pquery(
+                                "SELECT fieldlabel FROM vtiger_field WHERE columnname = ? AND tabid = (SELECT tabid FROM vtiger_tab WHERE name = ?)",
+                                [$relFieldName, $relModule]
+                            );
+                            if ($db->num_rows($res) > 0) {
+                                return $db->query_result($res, 0, 'fieldlabel');
+                            }
+                        } catch (\Exception $e) {}
+                    }
+                }
             }
 
             // Otherwise try to translate
@@ -302,7 +360,19 @@ class WordExport_Export_Action extends Vtiger_Action_Controller
         foreach ($data as $key => $value) {
             if (is_array($value) || is_object($value)) continue;
 
-            $displayValue = ($value === null) ? '' : (string)$value;
+            // Use getDisplayValue() for proper formatting (checkboxes→Sí/No, picklists→label, etc.)
+            $displayValue = '';
+            try {
+                $dv = $recordModel->getDisplayValue($key);
+                if ($dv !== false && $dv !== null) {
+                    $displayValue = (string)$dv;
+                }
+            } catch (\Throwable $e) {}
+
+            // Fallback to raw value if getDisplayValue returned empty but raw has data
+            if ($displayValue === '' && $value !== null && $value !== '') {
+                $displayValue = (string)$value;
+            }
 
             // For long text fields, convert newlines to <br /> for mPDF
             if (in_array(strtolower($key), ['terms_conditions', 'notes', 'description', 'comment'])) {
@@ -315,36 +385,61 @@ class WordExport_Export_Action extends Vtiger_Action_Controller
             $html = str_replace('$' . strtoupper($moduleName) . '_' . strtoupper($key) . '$', $displayValue, $html);
         }
 
-        // 5. Related Fields — resolve known fields FIRST, then clear any remaining $R_*
+        // 5. Related Fields — resolve ALL fields dynamically from related records
+        // Contact
         $contactId = $recordModel->get('contact_id');
         if ($contactId) {
             try {
                 $contactModel = Vtiger_Record_Model::getInstanceById($contactId, 'Contacts');
-                $html = str_replace('$R_CONTACTID_FIRSTNAME$',    $contactModel->get('firstname') ?? '', $html);
-                $html = str_replace('$R_CONTACTID_LASTNAME$',     $contactModel->get('lastname') ?? '', $html);
-                $html = str_replace('$R_CONTACTID_SALUTATIONTYPE$', $contactModel->get('salutationtype') ?? '', $html);
-                $html = str_replace('$R_CONTACTID_CF_982$',       $contactModel->get('cf_982') ?? '', $html);
+                $contactData = $contactModel->getData();
+                foreach ($contactData as $cKey => $cVal) {
+                    if (is_array($cVal) || is_object($cVal)) continue;
+                    $html = str_replace('$R_CONTACTID_' . strtoupper($cKey) . '$', ($cVal === null) ? '' : (string)$cVal, $html);
+                }
             } catch (Exception $e) {}
         }
 
+        // Account
         $accountId = $recordModel->get('account_id');
         if ($accountId) {
             try {
                 $accountModel = Vtiger_Record_Model::getInstanceById($accountId, 'Accounts');
-                $accountName  = $accountModel->get('accountname') ?? '';
-                $html = str_replace('$QUOTES_ACCOUNT_NAME$',   $accountName, $html);
-                $html = str_replace('$ACCOUNT_NAME$',          $accountName, $html);
-                $html = str_replace('$R_ACCOUNTID_ACCOUNTNAME$', $accountName, $html);
-                $html = str_replace('$R_ACCOUNTID_CF_852$',    $accountModel->get('cf_852') ?? '', $html);
-                $html = str_replace('$R_ACCOUNTID_INDUSTRY$',  $accountModel->get('industry') ?? '', $html);
+                $accountData = $accountModel->getData();
+                $accountName = $accountModel->get('accountname') ?? '';
+                foreach ($accountData as $aKey => $aVal) {
+                    if (is_array($aVal) || is_object($aVal)) continue;
+                    $html = str_replace('$R_ACCOUNTID_' . strtoupper($aKey) . '$', ($aVal === null) ? '' : (string)$aVal, $html);
+                }
+                // Aliases for account name
+                $html = str_replace('$QUOTES_ACCOUNT_NAME$', $accountName, $html);
+                $html = str_replace('$SALESORDER_ACCOUNT_NAME$', $accountName, $html);
+                $html = str_replace('$ACCOUNT_NAME$', $accountName, $html);
             } catch (Exception $e) {}
         }
 
+        // Potential
         $potentialId = $recordModel->get('potential_id');
         if ($potentialId) {
             try {
                 $potentialModel = Vtiger_Record_Model::getInstanceById($potentialId, 'Potentials');
-                $html = str_replace('$R_POTENTIALID_CF_984$', $potentialModel->get('cf_984') ?? '', $html);
+                $potentialData = $potentialModel->getData();
+                foreach ($potentialData as $pKey => $pVal) {
+                    if (is_array($pVal) || is_object($pVal)) continue;
+                    $html = str_replace('$R_POTENTIALID_' . strtoupper($pKey) . '$', ($pVal === null) ? '' : (string)$pVal, $html);
+                }
+            } catch (Exception $e) {}
+        }
+
+        // Quote (for SalesOrder referencing its parent quote)
+        $quoteId = $recordModel->get('quote_id');
+        if ($quoteId) {
+            try {
+                $quoteModel = Vtiger_Record_Model::getInstanceById($quoteId, 'Quotes');
+                $quoteData = $quoteModel->getData();
+                foreach ($quoteData as $qKey => $qVal) {
+                    if (is_array($qVal) || is_object($qVal)) continue;
+                    $html = str_replace('$R_QUOTEID_' . strtoupper($qKey) . '$', ($qVal === null) ? '' : (string)$qVal, $html);
+                }
             } catch (Exception $e) {}
         }
 
@@ -375,12 +470,18 @@ class WordExport_Export_Action extends Vtiger_Action_Controller
 
         // 7. Totals & Currencies
         $subTotal = floatval($data['hdnSubTotal'] ?? 0);
-        $taxAmount = floatval($data['hdnTaxType'] ?? 0);
         $discount = floatval($data['hdnDiscountAmount'] ?? 0);
         $grandTotal = floatval($data['hdnGrandTotal'] ?? 0);
+        $adjustment = floatval($data['txtAdjustment'] ?? 0);
+        $shAmount = floatval($data['hdnS_H_Amount'] ?? 0);
 
-        // Calculate tax percentage if subtotal exists
-        $taxPercent = ($subTotal > 0) ? number_format(($taxAmount / $subTotal) * 100, 2) : '0.00';
+        // Tax = grandTotal minus all other components
+        $preTaxTotal = $subTotal - $discount;
+        $taxAmount = $grandTotal - $preTaxTotal - $adjustment - $shAmount;
+        if ($taxAmount < 0) $taxAmount = 0;
+
+        // Calculate tax percentage based on pre-tax total
+        $taxPercent = ($preTaxTotal > 0) ? number_format(($taxAmount / $preTaxTotal) * 100, 2) : '0.00';
 
         $html = str_replace('$TOTALWITHOUTVAT$', number_format($subTotal, 2), $html);
         $html = str_replace('$TOTAL$', number_format($grandTotal, 2), $html);

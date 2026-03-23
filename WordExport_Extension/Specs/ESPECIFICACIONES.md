@@ -4,7 +4,7 @@
 
 WordExport es una extensión para Vtiger CRM 7.1 que permite exportar registros de módulos (Cotizaciones, Órdenes de Venta, Facturas, Órdenes de Compra) a documentos Word/PDF con templates personalizables.
 
-**Versión:** 1.1
+**Versión:** 1.2
 **Compatibilidad:** Vtiger CRM 7.1
 **Lenguaje:** PHP
 **Renderer PDF:** mPDF (compatible con HTML/CSS)
@@ -18,21 +18,37 @@ WordExport es una extensión para Vtiger CRM 7.1 que permite exportar registros 
 - **Word (.docx):** Generación de documentos Word usando PHPWord
 - **PDF:** Conversión automática de templates HTML a PDF usando mPDF
 
-### 2.2 Múltiples Templates Prediseñados
-Se incluyen 4 templates de cotización profesionales:
-- **Quote_Template_Professional_v2.html** - Diseño profesional limpio
-- **Quote_Template_Executive_v2.html** - Estilo ejecutivo con tipografía serif
-- **Quote_Template_Modern_v2.html** - Diseño moderno con tablas
-- **Quote_Template_PDFMaker_Style.html** - Basado en estructura de PDFMaker ⭐ (principal)
+### 2.2 Templates Prediseñados
+- **Quote_Template_PDFMaker_Style.html** - Cotizaciones, basado en PDFMaker ⭐ (principal)
+- **SalesOrder_Template_PDFMaker_Style.html** - Pedidos de Venta, basado en PDFMaker
+- **Test_HolaMundo.html** - Template de prueba mínimo
 
-### 2.3 Resolución Automática de Variables
+### 2.3 Previsualización PDF (Preview)
+- Modal overlay con iframe para previsualizar el PDF antes de descargar
+- Botones "Descargar" y "Cerrar" en el overlay
+- Usa `Content-Disposition: inline` para renderizado en iframe
+
+### 2.4 Guardar en Documentos
+- Checkbox "Guardar en Documentos" en el popup de exportación
+- Crea registro en módulo Documents de Vtiger
+- Vincula el documento al registro fuente (Cotización, Pedido, etc.)
+- Archivo se guarda en `storage/` de Vtiger
+
+### 2.5 Administración de Templates
+- Vista en `/index.php?module=WordExport&view=ListTemplates`
+- **Upload**: subir nuevos templates HTML/DOCX
+- **Download**: descargar templates existentes para edición
+- **Delete**: eliminar templates (con confirmación)
+
+### 2.6 Resolución Automática de Variables
 - **Imágenes estáticas:** `$IMG_nombre$` → Imagen desde `modules/WordExport/images/`
 - **Empresa:** `$COMPANY_*$` → Datos desde `vtiger_organizationdetails`
-- **Campos directos:** `$CAMPO$` → Valores del registro
+- **Campos directos:** `$CAMPO$` → Valores del registro (usa `getDisplayValue()` para checkboxes→Sí/No, picklists→label)
 - **Campos modulares:** `$MODULO_CAMPO$` → Valores del módulo específico
-- **Custom fields:** `$QUOTES_CF_XXX$` → Automático, sin hardcodear
-- **Campos relacionados:** `$R_RELACIÓNID_CAMPO$` → Valores de registros relacionados
+- **Custom fields:** `$QUOTES_CF_XXX$` / `$SALESORDER_CF_XXX$` → Automático, sin hardcodear
+- **Campos relacionados:** `$R_MODULOID_CAMPO$` → Todos los campos de registros relacionados (loop dinámico)
 - **Etiquetas de traducción:** `%G_ETIQUETA%` → Textos en español
+- **Labels de campos:** `%MODULO_CF_XXX%` → Label del campo desde `vtiger_field.fieldlabel`
 
 ### 2.4 Campos Soportados
 
@@ -95,12 +111,34 @@ $R_ACCOUNTID_INDUSTRY$     - Industria
 $R_ACCOUNTID_CF_XXX$       - Campos personalizados de cuenta
 ```
 
-#### Campos de Usuario
+#### Campos de Usuario Asignado
 ```
-$USERS_FIRST_NAME$  - Nombre del usuario asignado
-$USERS_LAST_NAME$   - Apellido del usuario asignado
-$USERS_EMAIL1$      - Email principal del usuario asignado
+$USERS_FIRST_NAME$  - Nombre del usuario asignado al registro
+$USERS_LAST_NAME$   - Apellido del usuario asignado al registro
+$USERS_EMAIL1$      - Email principal del usuario asignado al registro
 ```
+
+#### Campos del Usuario Logueado (quien genera el PDF)
+```
+$R_USERS_FIRST_NAME$  - Nombre del usuario que genera el PDF
+$R_USERS_LAST_NAME$   - Apellido del usuario que genera el PDF
+$R_USERS_EMAIL1$      - Email del usuario que genera el PDF
+```
+
+#### Campos Relacionados — Cotización (para SalesOrder)
+```
+$R_QUOTEID_QUOTE_NO$     - Número de cotización padre
+$R_QUOTEID_CF_XXX$       - Campos personalizados de la cotización padre
+```
+
+#### Labels de Campos (nombre del campo, no valor)
+```
+%SALESORDER_CF_XXX%     - Label del campo CF_XXX en SalesOrder (ej: "Notas de entrega")
+%QUOTES_CF_XXX%         - Label del campo CF_XXX en Quotes
+%R_ACCOUNTID_CF_XXX%    - Label del campo CF_XXX en Accounts
+%R_POTENTIALID_CF_XXX%  - Label del campo CF_XXX en Potentials
+```
+> Se resuelven consultando `vtiger_field.fieldlabel` por `columnname` y `tabid`.
 
 #### Campos de Productos/Artículos (dentro de #PRODUCTBLOC_START# ... #PRODUCTBLOC_END#)
 ```
@@ -115,14 +153,16 @@ $PRODUCTSTOTALAFTERDISCOUNT$    - Total con descuento (2 decimales)
 
 #### Campos Financieros
 ```
-$TOTALWITHOUTVAT$    - Subtotal (sin impuesto)
-$TOTALDISCOUNT$      - Total de descuentos
-$VAT$                - Monto de impuesto
-$VATPERCENT$         - Porcentaje de impuesto (calculado automáticamente)
-$TOTAL$              - Total a pagar
+$TOTALWITHOUTVAT$    - Subtotal (hdnSubTotal)
+$TOTALDISCOUNT$      - Total de descuentos (hdnDiscountAmount)
+$VAT$                - Monto de impuesto (calculado: grandTotal - preTaxTotal - adjustment - S&H)
+$VATPERCENT$         - Porcentaje de impuesto (calculado: taxAmount / preTaxTotal × 100)
+$TOTAL$              - Total a pagar (hdnGrandTotal)
 $CURRENCYSYMBOL$     - Símbolo de moneda (desde vtiger_currency_info)
 $CURRENCYNAME$       - Nombre de moneda (desde vtiger_currency_info)
 ```
+> ⚠️ `hdnTaxType` contiene el TIPO de impuesto ("individual"/"group"), NO el monto.
+> El monto se calcula: `grandTotal - (subTotal - discount) - adjustment - S&H`
 
 #### Etiquetas Traducibles (%G_%)
 Se reemplazan con `str_replace` directo antes del regex para garantizar traducción:
@@ -135,6 +175,16 @@ Se reemplazan con `str_replace` directo antes del regex para garantizar traducci
 %G_Tax%                 → Impuesto
 %G_LBL_GRAND_TOTAL%     → TOTAL
 %M_Quote No%            → Cotización
+```
+> ⚠️ El regex para labels es `/%([A-Za-z0-9_ ]+)%/` (solo alfanuméricos, guión bajo y espacios).
+> El regex anterior `/%([^%]+)%/` capturaba HTML entre `%` literales (ej: `$VATPERCENT$%` → `%SALESORDER_CF_1175%`).
+
+#### Nombre del Archivo Exportado
+```
+Cotización:      {quote_no}_{cf_996}_{cuenta}.pdf     (ej: COT-11916_Rev2_MILTEQ_HEAVY.pdf)
+Pedido de Venta: {salesorder_no}_{cuenta}.pdf          (ej: CIP-4381_PRAXAIR_MEXICO.pdf)
+Factura:         {invoice_no}_{cuenta}.pdf
+Orden de Compra: {purchaseorder_no}_{cuenta}.pdf
 ```
 
 ---
@@ -327,10 +377,14 @@ WordExport_Extension/
 |---|---|
 | **NO usar `@page { size: letter; }`** | Renderiza 1 carácter por página (201+ páginas). Tamaño se define en constructor PHP |
 | **NO usar `width="100%"` en tablas** | Genera cientos de páginas en blanco. Usar mm fijos (180mm para márgenes de 15mm) |
+| **Anchos de columna: usar atributo HTML `width` en `<col>` + `<th>` + `<td>`** | `style="width:Xmm"` y `table-layout:fixed` NO funcionan solos en mPDF. Usar las 3 capas |
 | **NO usar CSS `float`** | Loop infinito en mPDF Output() — el proceso nunca termina. Usar tablas HTML |
 | **NO usar `simpleTables => true` con colspan** | Loop infinito en mPDF — el proceso nunca termina |
 | **NO usar `* { margin:0; padding:0 }`** | Interfiere con elementos internos de mPDF |
 | **NO usar `@font-face` sin `src`** | Declaración inválida que puede causar lentitud extrema |
+| **Regex labels: usar `[A-Za-z0-9_ ]+` no `[^%]+`** | `[^%]+` captura HTML entre `%` literales (ej: `$VATPERCENT$%...%CF_1175%`) |
+| **`page-break-inside: avoid` NO funciona en mPDF** | Usar `<div>` para contenido que debe fluir entre páginas, no tablas separadas |
+| **Notas/firma después de tabla**: usar `<div>`, no `<table>` | mPDF mueve tablas completas a nueva página; `<div>` fluye naturalmente |
 
 ### 10.2 Limitaciones generales
 - ❌ CSS Grid y Flexbox no funcionan en mPDF (usar tablas HTML)
@@ -384,6 +438,28 @@ $mpdf = new \Mpdf\Mpdf([
 
 ## 12. Historial de Cambios
 
+### v1.2 (Marzo 2026)
+- ✅ **Template SalesOrder** (`SalesOrder_Template_PDFMaker_Style.html`) basado en PDFMaker original
+- ✅ **Previsualización PDF** — modal overlay con iframe, botones Descargar/Cerrar
+- ✅ **Guardar en Documentos** — checkbox para guardar PDF en módulo Documents y vincular al registro
+- ✅ **Download de templates** — botón en Lista de Templates para descargar archivos
+- ✅ **Campos relacionados dinámicos** — loop sobre ALL fields de Contact, Account, Potential, Quote (no hardcodeados)
+- ✅ **`$R_USERS_*$`** — usuario logueado (quien genera el PDF), distinto de `$USERS_*$` (asignado)
+- ✅ **`$R_QUOTEID_*$`** — campos de la cotización padre (para SalesOrder)
+- ✅ **`%MODULO_CF_XXX%`** — labels de campos via `vtiger_field.fieldlabel` (DB query)
+- ✅ **`getDisplayValue()`** — checkboxes muestran Sí/No, picklists muestran label (no 0/1)
+- ✅ **Cálculo de impuesto corregido** — era `hdnTaxType` (tipo, no monto), ahora: `grandTotal - preTaxTotal - adjustment - S&H`
+- ✅ **Regex labels corregido** — de `[^%]+` a `[A-Za-z0-9_ ]+` (evita capturar HTML entre `%` literales)
+- ✅ **Nombre de archivo** — `{doc_no}_{revision}_{cuenta}.pdf` (cuenta sanitizada, sin timestamp)
+- ✅ **Iframe oculto para descarga** — `downloadViaIframe()` evita navegación del browser
+- ✅ **`session_write_close()`** — libera session lock antes de mPDF
+- ✅ **`set_time_limit(300)`** — 5 minutos para templates complejos
+- ✅ **`{literal}` en Popup.tpl** — evita que Smarty interprete jQuery `$`
+- ✅ **Anchos de columna fijos** — `width` en `<col>` + `<th>` + `<td>` (3 capas, única forma confiable)
+- ✅ **Sin `@page { size: letter }`** — causa 1 carácter por página; tamaño en constructor PHP
+- ✅ **Sin CSS floats** — causa loops infinitos; usar tablas HTML
+- ✅ **Sin `width: 100%`** — genera páginas en blanco; usar mm fijos
+
 ### v1.1 (Marzo 2026)
 - ✅ Tamaño de PDF cambiado a **Letter**
 - ✅ Sistema de imágenes estáticas `$IMG_nombre|ancho|alto$`
@@ -411,5 +487,5 @@ $mpdf = new \Mpdf\Mpdf([
 
 ---
 
-**Documento de especificaciones v1.1**
+**Documento de especificaciones v1.2**
 Vtiger CRM 7.1 - WordExport Extension
