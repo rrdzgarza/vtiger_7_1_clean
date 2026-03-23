@@ -114,29 +114,45 @@ class WordExport_Export_Action extends Vtiger_Action_Controller
                 }
             }
 
-            // Account name for filename
-            $acctName = '';
-            $acctId = $recordModel->get('account_id');
-            if ($acctId) {
-                try {
-                    $acctModel = Vtiger_Record_Model::getInstanceById($acctId, 'Accounts');
-                    $acctName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $acctModel->get('accountname') ?? '');
-                } catch (Exception $e) {}
-            }
+            // Use custom filename from popup if provided, otherwise generate default
+            $customFilename = $request->get('custom_filename');
+            if (!empty($customFilename)) {
+                $finalFileName = preg_replace('/[^A-Za-z0-9_\-\. ]/', '_', $customFilename) . '.' . $ext;
+            } else {
+                $acctName = '';
+                $acctId = $recordModel->get('account_id');
+                if ($acctId) {
+                    try {
+                        $acctModel = Vtiger_Record_Model::getInstanceById($acctId, 'Accounts');
+                        $acctName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $acctModel->get('accountname') ?? '');
+                    } catch (Exception $e) {}
+                }
 
-            $finalFileName = $module . '_' . $acctName . '.' . $ext;
+                $finalFileName = $module . '_' . $acctName . '.' . $ext;
 
-            if ($recordModel->get('quote_no')) {
-                $rev = $recordModel->get('cf_996');
-                $revPart = (!empty($rev)) ? '_' . $rev : '';
-                $finalFileName = $recordModel->get('quote_no') . $revPart . '_' . $acctName . '.' . $ext;
+                if ($recordModel->get('quote_no')) {
+                    $rev = $recordModel->get('cf_996');
+                    $revPart = (!empty($rev)) ? '_' . $rev : '';
+                    $finalFileName = $recordModel->get('quote_no') . $revPart . '_' . $acctName . '.' . $ext;
+                }
+                if ($recordModel->get('salesorder_no')) {
+                    $soStatus = preg_replace('/[^A-Za-z0-9_\-]/', '_', $recordModel->getDisplayValue('sostatus') ?? '');
+                    $marca = '';
+                    $potId = $recordModel->get('potential_id');
+                    if ($potId) {
+                        try {
+                            $potModel = Vtiger_Record_Model::getInstanceById($potId, 'Potentials');
+                            $marca = preg_replace('/[^A-Za-z0-9_\-]/', '_', $potModel->get('cf_984') ?? '');
+                        } catch (Exception $e) {}
+                    }
+                    $marcaPart = (!empty($marca)) ? '_' . $marca : '';
+                    $finalFileName = '01_' . $recordModel->get('salesorder_no') . '_' . $acctName . $marcaPart . '_' . $soStatus . '.' . $ext;
+                }
+                if ($recordModel->get('invoice_no'))
+                    $finalFileName = $recordModel->get('invoice_no') . '_' . $acctName . '.' . $ext;
+                if ($recordModel->get('purchaseorder_no'))
+                    $finalFileName = $recordModel->get('purchaseorder_no') . '_' . $acctName . '.' . $ext;
             }
-            if ($recordModel->get('salesorder_no'))
-                $finalFileName = $recordModel->get('salesorder_no') . '_' . $acctName . '.' . $ext;
-            if ($recordModel->get('invoice_no'))
-                $finalFileName = $recordModel->get('invoice_no') . '_' . $acctName . '.' . $ext;
-            if ($recordModel->get('purchaseorder_no'))
-                $finalFileName = $recordModel->get('purchaseorder_no') . '_' . $acctName . '.' . $ext;
 
             // Save to Documents if requested
             if ($saveToDocs) {

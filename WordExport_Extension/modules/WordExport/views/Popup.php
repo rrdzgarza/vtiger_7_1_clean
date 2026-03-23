@@ -37,10 +37,49 @@ class WordExport_Popup_View extends Vtiger_Popup_View
             }
         }
 
+        // Generate default filename
+        $defaultFileName = '';
+        if ($recordId && $sourceModule) {
+            try {
+                $recordModel = Vtiger_Record_Model::getInstanceById($recordId, $sourceModule);
+                $acctName = '';
+                $acctId = $recordModel->get('account_id');
+                if ($acctId) {
+                    try {
+                        $acctModel = Vtiger_Record_Model::getInstanceById($acctId, 'Accounts');
+                        $acctName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $acctModel->get('accountname') ?? '');
+                    } catch (Exception $e) {}
+                }
+
+                if ($sourceModule === 'Quotes') {
+                    $rev = $recordModel->get('cf_996');
+                    $revPart = (!empty($rev)) ? '_' . $rev : '';
+                    $defaultFileName = $recordModel->get('quote_no') . $revPart . '_' . $acctName;
+                } elseif ($sourceModule === 'SalesOrder') {
+                    $soStatus = preg_replace('/[^A-Za-z0-9_\-]/', '_', $recordModel->getDisplayValue('sostatus') ?? '');
+                    $marca = '';
+                    $potId = $recordModel->get('potential_id');
+                    if ($potId) {
+                        try {
+                            $potModel = Vtiger_Record_Model::getInstanceById($potId, 'Potentials');
+                            $marca = preg_replace('/[^A-Za-z0-9_\-]/', '_', $potModel->get('cf_984') ?? '');
+                        } catch (Exception $e) {}
+                    }
+                    $marcaPart = (!empty($marca)) ? '_' . $marca : '';
+                    $defaultFileName = '01_' . $recordModel->get('salesorder_no') . '_' . $acctName . $marcaPart . '_' . $soStatus;
+                } elseif ($sourceModule === 'Invoice') {
+                    $defaultFileName = $recordModel->get('invoice_no') . '_' . $acctName;
+                } elseif ($sourceModule === 'PurchaseOrder') {
+                    $defaultFileName = $recordModel->get('purchaseorder_no') . '_' . $acctName;
+                }
+            } catch (Exception $e) {}
+        }
+
         $viewer->assign('MODULE', $moduleName);
         $viewer->assign('RECORD', $recordId);
         $viewer->assign('SOURCE_MODULE', $sourceModule);
         $viewer->assign('TEMPLATES', $templates);
+        $viewer->assign('DEFAULT_FILENAME', $defaultFileName);
 
         echo $viewer->view('Popup.tpl', $moduleName, true);
     }

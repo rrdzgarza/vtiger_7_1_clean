@@ -31,6 +31,16 @@
                 <input type="hidden" name="format" value="pdf" />
 
                 <div class="form-group">
+                    <label class="control-label col-sm-3">Nombre del archivo</label>
+                    <div class="col-sm-8">
+                        <div class="input-group">
+                            <input type="text" name="custom_filename" class="form-control" value="{$DEFAULT_FILENAME}" />
+                            <span class="input-group-addon">.pdf</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
                     <div class="col-sm-offset-3 col-sm-8">
                         <div class="checkbox">
                             <label>
@@ -80,6 +90,10 @@ jQuery(document).ready(function($) {
             template:      form.find('[name=template]').val(),
             format:        'pdf'
         };
+        var customName = form.find('[name=custom_filename]').val();
+        if (customName) {
+            params.custom_filename = customName;
+        }
         if (form.find('[name=save_to_docs]').is(':checked')) {
             params.save_to_docs = '1';
         }
